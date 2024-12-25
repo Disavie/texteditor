@@ -1,6 +1,6 @@
 
+#include "ansihelpers.h"
 #include "mytui.h"
-#include <ncurses.h>
 
 void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGHT][WIDTH]){
     const char DEF = ' ';
@@ -48,9 +48,9 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
 }
 
 
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGHT][WIDTH], short in, short out){ 
+void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int in, int out){ 
 
-    const char DEF = ' ';
+    const char DEF = '.';
     setlocale(LC_CTYPE,"");
     //BORDERS
     wchar_t BLOCK= 0x2588;
@@ -69,7 +69,7 @@ void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char
     }
     int x = 0;
     char letter;
-    for(int i = in-1 ; i < out+1 ; i ++){
+    for(int i = in-1 ; i < out+1 ; i++){
         while(x < startx){
             printf(" ");
             x++;
@@ -83,7 +83,7 @@ void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char
             }else{
                 letter = args[i][j];
                 if (letter == '\0'){
-                    printf(".");
+                    printf("%c",DEF);
                 }else{
                     printf("%c",letter);
                 }
@@ -171,6 +171,8 @@ void get_cursor_pos(int * row, int * col){
     *col = num;
     scanf("%c",&ch); //gets rid of the 'R' left in buffer
 
+    fflush(stdin);
+
 }
 
 int countlines(FILE * f){
@@ -201,5 +203,35 @@ void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH]
         strcpy(dest[i],source[i+start_range]);  
     }
     
+
+}
+
+void flush_stdin(){
+    char buf;
+    double dummy;
+    do{
+        buf = timed_input(0.0001,&dummy);
+    }while(buf!= -1);
+}
+
+void snap_left(char** buffer, int * cursRow, int * cursCol, int row_offset, int col_offset){
+
+    //current line is buffer[cursRow]
+    int shifted = 0;
+    int hitboreder = 0;
+    while(buffer[(*cursRow)+row_offset][(*cursCol)+col_offset] == '\0'){
+        if((*cursCol)+col_offset == 0){
+            hitboreder = 1; 
+            break;
+        }
+        shifted = 1;
+        moveleft();
+        get_cursor_pos(cursRow,cursCol);
+        flush_stdin();
+    }
+    if(shifted && !hitboreder)
+        moveright();
+    get_cursor_pos(cursRow,cursCol);
+    flush_stdin();
 
 }

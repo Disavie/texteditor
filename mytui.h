@@ -37,7 +37,7 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
 /*
  * Creates screen from a range in the buffer args between in and out, given that HEIGHT > (out - in)
  */
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGHT][WIDTH], short in, short out); 
+void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args, int in, int out); 
 
 
 /*
@@ -57,5 +57,8 @@ int countlines(FILE * f);
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range);
  
+void snap_left(char ** buffer, int * cursRow, int * cursCol,int row_offset,int col_offset);
+
+void flush_stdin();
 
 #endif

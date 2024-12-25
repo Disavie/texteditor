@@ -15,43 +15,41 @@ int main(int argc, char ** argv){
 
     char ch; 
     FILE * f;
-
     char filename[strlen(argv[1])];
     strcpy(filename,argv[1]);
-
-    printf("%s",argv[1]);
-    char temp;
 
     f = fopen(argv[1],"r");
     int linecount = countlines(f);
     fclose(f);
 
     int szHelper = linecount; 
-    if(linecount < (int)HEIGHT){
+    if(linecount < HEIGHT){
         szHelper = HEIGHT;
     }
-    char full_buffer[szHelper][WIDTH];
+    char ** f_buf = (char **)malloc(szHelper*sizeof(char *));
 
-    for(int i = 0; i < szHelper;i++){
-        for(int j = 0 ; j < WIDTH ; j++){
-            full_buffer[i][j] = '\0';
-        }
+    for(int i = 0 ; i < szHelper ; i++){
+        f_buf[i] = (char *)malloc((WIDTH+1)*sizeof(char));
+        memset(f_buf[i], '\0',WIDTH+1);
     }
+
     f = fopen(argv[1],"r");    
     int i = 0;
     while(!feof(f)){
-        fgets(full_buffer[i],sizeof(full_buffer[0]),f);
-        size_t len = strlen(full_buffer[i]);
-        if(full_buffer[i][len-1] == '\n')
-            full_buffer[i][len-1] = '\0';
+        fgets(f_buf[i],WIDTH,f);
+        size_t len = strlen(f_buf[i]);
+        if(f_buf[i][len-1] == '\n')
+            f_buf[i][len-1]= '\0';
+
         i++;
     }
     fclose(f);
 
+
     short rend_HEIGHT = HEIGHT - 3;
 
-    short start = 0;
-    short end = linecount;
+    int start = 0;
+    int end = linecount;
     if(linecount < rend_HEIGHT) end = rend_HEIGHT; 
 
 
@@ -60,14 +58,17 @@ int main(int argc, char ** argv){
     int hasQuit = 0;
     int change_made = 1;
     while(!hasQuit){
+
         
         if(change_made){
-            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,full_buffer,start,end);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,start,end);
             printf("\033[%d;%dH",cRow,cCol);
             change_made = 0;
         }
 
+        snap_left(f_buf, &cRow,&cCol, start-2,-2);
         ch = getchar();
+        flush_stdin();
 
         if(ch == '\0') continue; // no changes were made  
         if (ch == 'q'){
@@ -78,54 +79,61 @@ int main(int argc, char ** argv){
 
                 ch = getchar(); //A/B/C/D
                 switch (ch){
-                    case 'A': moveup(); //SNAPLEFT ;break;
-                    case 'B':
-                        if(cRow <= linecount){ movedown(); }//SNAPLEFT }
+                    case 'A':
+                        if(cRow > 2)moveup(); 
                         break;
-                    case 'C': moveright(); break;
-                    case 'D': moveleft(); break;
+                    case 'B':
+                        if(cRow <= linecount) movedown();
+                        break;
+                    case 'C':
+                        if(cCol <= WIDTH) moveright();
+                        break;
+                    case 'D':
+                        if(cCol > 2) moveleft();
+                        break;
                     default:
                         printf("unknown escape sequence: \\033[%c\n",ch);
-                        char buf;
-                        double dummy;
-                        do{
-                            buf = timed_input(0.01,&dummy);
-                        }while(buf!= -1);
-                        fflush(stdin);
+                        flush_stdin();
                         continue;
                 }
-             }else
-                  printf("unknown escape sequence: \\033%c",ch);
+             }else{
+                printf("unknown escape sequence: \\033%c\n",ch);
+                printf("please work");
+                    
+            }
         }else{
+            
             short ascii_ch = (short)ch;
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol > 2){
-                    full_buffer[start+cRow-2][cCol-3] = '\0';
-                    moveleft();
+                if(cCol >= 2){
+                    f_buf[start+cRow-2][cCol-2] = '\0';
+                    if(cCol > 2)
+                        moveleft();
                 }else
                     continue;
             }else if(ascii_ch == 10){ // '\n'
                 movedown();
-                //SNAP LEFT
                 //DO OTHER STUFF TO ALLOCATE NEWLIEN TO FULL_BUFFER
             }else{
-                full_buffer[start+cRow-2][cCol-2] = ch; //subtract 2 to account for the window borders
+                f_buf[start+cRow-2][cCol-2] = ch;
                 moveright();
             }
             change_made = 1;
         }
+
         get_cursor_pos(&cRow,&cCol);
-        fflush(stdin);
+        flush_stdin();
     }
     //saving the file
     f = fopen(argv[1],"w");
     if (f == NULL) printf("error opening file: %s\n",argv[1]);
     for(int i = 0 ; i < linecount ; i++){
-        fprintf(f,"%s\n",full_buffer[i]);
+        fprintf(f,"%s\n",f_buf[i]);
     }
     fclose(f);
-
-
+    //restore cursor
+    printf("\033[2J");
+    printf("\033[H");
     restore_input_mode(&oldtermios);
     return 0;
 }
