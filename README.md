@@ -12,13 +12,13 @@ added vertical scroll support <br />
 going to add proper implementation for \n \t text insert and backspace <br />
 
 
-
-
-
-
-
-
-
-
+improved line snapping feature <br />
+lines are dynamically allocated instead of bein set length <br />
+still need to fix typing too fast <br />
+why are these lines getting synced with each other <br />
+oh okay its because now i am basically writing into unallocated memory so undefined behavior <br />         
+this is a side effect of dynamically set lines <br />                       
+fixed flickering issue on scroll <br />     
+            
 
 .

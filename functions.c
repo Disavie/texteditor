@@ -171,7 +171,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
 
     setlocale(LC_CTYPE,"");
     //BORDERS
-    const char DEF = ' ';
+    const char DEF = '.';
     wchar_t BLOCK= 0x2588;
     wchar_t LEFTBORD = 0x2595;
     wchar_t RIGHTBORD = 0x258F;
