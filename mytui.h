@@ -37,7 +37,7 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
 /*
  * Creates screen from a range in the buffer args between in and out, given that HEIGHT > (out - in)
  */
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args, int in, int out); 
+void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn); 
 
 
 /*

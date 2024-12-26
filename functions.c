@@ -48,7 +48,7 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
 }
 
 
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int in, int out){ 
+void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn){ 
 
     const char DEF = '.';
     setlocale(LC_CTYPE,"");
@@ -69,16 +69,16 @@ void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char
     }
     int x = 0;
     char letter;
-    for(int i = in-1 ; i < out+1 ; i++){
+    for(int i = yIn-1 ; i < yIn+HEIGHT+1 ; i++){
         while(x < startx){
             printf(" ");
             x++;
         }
         printf("%lc",LEFTBORD);
-        for(int j = 0; j < WIDTH ; j++){
-            if( i == in-1){
+        for(int j = xIn; j < xIn+WIDTH ; j++){
+            if( i == yIn-1){
                 printf("%lc",TOPBORD);
-            }else if ( i == out){
+            }else if ( i == yIn+HEIGHT){
                 printf("%lc",BOTTOMBORD);
             }else{
                 letter = args[i][j];
