@@ -47,20 +47,20 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
     }
 }
 
+void draw_borders(int startx, int starty, int win_height, int win_width){
 
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn){ 
-
-    const char DEF = '.';
     setlocale(LC_CTYPE,"");
     //BORDERS
+    const char DEF = ' ';
     wchar_t BLOCK= 0x2588;
     wchar_t LEFTBORD = 0x2595;
     wchar_t RIGHTBORD = 0x258F;
     wchar_t BOTTOMBORD = 0x2581;
     wchar_t TOPBORD  = 0x2594;
     
-    printf("\033[2J\033[H");
-
+    clear_screen();
+    move00();
+    hidecursor();
     //setting the starty;
     int y = 0;
     while(y < starty){
@@ -69,30 +69,159 @@ void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char
     }
     int x = 0;
     char letter;
-    for(int i = yIn-1 ; i < yIn+HEIGHT+1 ; i++){
+    for(int i = -1 ; i < win_height+1 ; i++){
         while(x < startx){
             printf(" ");
             x++;
         }
         printf("%lc",LEFTBORD);
-        for(int j = xIn; j < xIn+WIDTH ; j++){
-            if( i == yIn-1){
+
+        for(int j = 0; j < win_width; j++){
+            if( i == -1){
                 printf("%lc",TOPBORD);
-            }else if ( i == yIn+HEIGHT){
+            }else if ( i == win_height){
                 printf("%lc",BOTTOMBORD);
             }else{
-                letter = args[i][j];
-                if (letter == '\0'){
-                    printf("%c",DEF);
+                printf("\033[2;39m%c\033[0m",DEF);
+            }
+        }
+        x = 0;
+        printf("%lc\n",RIGHTBORD);
+    }
+    showcursor();
+}
+    
+
+void noflicker_create_window_inoutRANGE(int startx, int starty, int win_height, int max_width, char **args, int yIn, int xIn) {
+    setlocale(LC_CTYPE, "");
+    // BORDERS
+    const char DEF = ' ';
+    wchar_t BLOCK = 0x2588;
+    wchar_t LEFTBORD = 0x2595;
+    wchar_t RIGHTBORD = 0x258F;
+    wchar_t BOTTOMBORD = 0x2581;
+    wchar_t TOPBORD = 0x2594;
+
+    // Estimate buffer size
+    size_t buffer_size = 1024 * 1024; // 1 MB buffer, adjust as needed
+    char *output_buffer = malloc(buffer_size);
+    if (!output_buffer) {
+        perror("Failed to allocate buffer");
+        exit(1);
+    }
+
+    // Pointer to track the current position in the buffer
+    char *buffer_ptr = output_buffer;
+
+    // Clear screen, move cursor to 0,0 and hide cursor
+    snprintf(buffer_ptr, buffer_size, "\033[H\033[?25l");
+    buffer_ptr += strlen(buffer_ptr);
+
+    int y = 0;
+    // Setting the starty
+    while (y < starty) {
+        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%d\n", y);
+        y++;
+    }
+
+    int x = 0;
+    for (int i = yIn - 1; i < yIn + win_height + 1; i++) {
+        while (x < startx) {
+            buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), " ");
+            x++;
+        }
+
+        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", LEFTBORD);
+        size_t len = 0;
+
+        if (i >= 0 && i < yIn + win_height) {
+            len = strlen(args[i]);
+        }
+
+        for (int j = xIn; j < xIn + max_width; j++) {
+            if (i == yIn - 1) {
+                buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", TOPBORD);
+            } else if (i == yIn + win_height) {
+                buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", BOTTOMBORD);
+            } else {
+                if (j < len) {
+                    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%c", args[i][j]);
+                } else {
+                    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "\033[2;39m%c\033[0m", DEF);
+                }
+            }
+        }
+
+        x = 0;
+        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc\n", RIGHTBORD);
+    }
+
+    // Show cursor again
+    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "\033[?25h");
+
+    // Write the entire buffer to stdout at once
+    fwrite(output_buffer, 1, buffer_ptr - output_buffer, stdout);
+
+    // Free the buffer
+    free(output_buffer);
+}
+
+
+void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn){ 
+
+    setlocale(LC_CTYPE,"");
+    //BORDERS
+    const char DEF = ' ';
+    wchar_t BLOCK= 0x2588;
+    wchar_t LEFTBORD = 0x2595;
+    wchar_t RIGHTBORD = 0x258F;
+    wchar_t BOTTOMBORD = 0x2581;
+    wchar_t TOPBORD  = 0x2594;
+
+    move00();
+    hidecursor();
+
+    int y = 0;
+    //setting the starty;
+    while(y < starty){
+        printf("%d\n",y);
+        y++;
+    }
+    int x = 0;
+    char letter;
+    for(int i = yIn-1 ; i < yIn+win_height+1 ; i++){
+        while(x < startx){
+            printf(" ");
+            x++;
+        }
+        printf("%lc",LEFTBORD);
+        size_t len;
+        if(i >= 0 && i < yIn+win_height)
+             len = strlen(args[i]);
+
+
+        for(int j = xIn; j < xIn+max_width ; j++){
+            if( i == yIn-1){
+                printf("%lc",TOPBORD);
+            }else if ( i == yIn+win_height){
+                printf("%lc",BOTTOMBORD);
+            }else{
+                if(j < len){
+                    printf("%c",args[i][j]);
                 }else{
-                    printf("%c",letter);
+                    printf("\033[2;39m%c\033[0m",DEF);
                 }
             }
         }
         x = 0;
         printf("%lc\n",RIGHTBORD);
     }
+    showcursor();
 }
+
+
+
+
 
 void set_input_mode(struct termios *old_termios) {
     struct termios new_termios;
@@ -214,24 +343,19 @@ void flush_stdin(){
     }while(buf!= -1);
 }
 
-void snap_left(char** buffer, int * cursRow, int * cursCol, int row_offset, int col_offset){
+void snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset){
 
     //current line is buffer[cursRow]
-    int shifted = 0;
-    int hitboreder = 0;
-    while(buffer[(*cursRow)+row_offset][(*cursCol)+col_offset] == '\0'){
-        if((*cursCol)+col_offset == 0){
-            hitboreder = 1; 
-            break;
-        }
-        shifted = 1;
-        moveleft();
-        get_cursor_pos(cursRow,cursCol);
-        flush_stdin();
+    size_t row_len = strlen(buffer[(*cursRow)+yIn-yOffset]);
+    if(row_len < (*cursCol)-xOffset){
+       movecurs(*cursRow,row_len+xOffset); 
     }
-    if(shifted && !hitboreder)
-        moveright();
     get_cursor_pos(cursRow,cursCol);
     flush_stdin();
 
 }
+
+void movecurs(int row, int col){ printf("\033[%d;%dH",row,col);}
+
+
+

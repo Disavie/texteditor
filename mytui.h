@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <string.h>
-
+//i added this comment in the shit editor also it is having some weird flicker issues
 
 
 typedef struct{
@@ -38,7 +38,9 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
  * Creates screen from a range in the buffer args between in and out, given that HEIGHT > (out - in)
  */
 void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn); 
+void noflicker_create_window_inoutRANGE(int startx, int starty, int win_height, int max_width, char **args, int yIn, int xIn);
 
+void draw_borders(int startx, int starty, int win_height, int win_width);
 
 /*
 * Return integer code of if user input was gathered successfully
@@ -57,8 +59,10 @@ int countlines(FILE * f);
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range);
  
-void snap_left(char ** buffer, int * cursRow, int * cursCol,int row_offset,int col_offset);
+void snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset); 
 
 void flush_stdin();
+
+void movecurs(int row, int col);
 
 #endif

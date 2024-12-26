@@ -28,10 +28,6 @@ int main(int argc, char ** argv){
     }
     char ** f_buf = (char **)malloc(szHelper*sizeof(char *));
 
-    for(int i = 0 ; i < szHelper ; i++){
-        f_buf[i] = (char *)malloc((WIDTH+1)*sizeof(char));
-        memset(f_buf[i], '\0',WIDTH+1);
-    }
     /*
     printf("got here\n");
     printf("height = %d, width = %d, \n",HEIGHT,WIDTH);
@@ -40,29 +36,51 @@ int main(int argc, char ** argv){
     f = fopen(argv[1],"r");    
     int i = 0;
     while(!feof(f) && i < linecount){
-        
-        fgets(f_buf[i],WIDTH,f);
-        size_t len = strlen(f_buf[i]);
+        char line[256];
+
+        fgets(line,sizeof(line),f);
+        size_t len = strlen(line);
+        char * shortened_line = (char *)malloc(len*sizeof(char));
+        f_buf[i] = shortened_line;
+        strcpy(f_buf[i],line);
         if(f_buf[i][len-1] == '\n')
             f_buf[i][len-1]= '\0';
         printf("read line : %s \n" ,f_buf[i]);
         i++;
     }
+    //if file is shorter than the terminal height then fill with blank lines
+    if(linecount < HEIGHT){
+        while(i < szHelper){
+            f_buf[i] = (char *)malloc(sizeof(char));
+            f_buf[i][0] = '\0';
+            i++;
+        }
+    }
+
     fclose(f);
     printf("exited the file successfully\n");
 
 
     short rend_HEIGHT = HEIGHT - 3;
 
-    int Ystart = 0;
+    int yStart = 0;
     int xStart = 0;
     int cRow = 2;
     int cCol = 2;
     int hasQuit = 0;
-
+    short update_made = 1;
+    /*
     printf("got here\n");
-    printf("height = %d, width = %d, Ystart = %d, xStart = %d\n",HEIGHT,WIDTH,Ystart,xStart);
+    printf("height = %d, width = %d, yStart = %d, xStart = %d\n",HEIGHT,WIDTH,Ystart,xStart);
     sleep(2);
+    */
+
+    //alternate buffer to reduce flickering
+    openAltBuffer();
+    draw_borders(0,0,rend_HEIGHT,WIDTH);
+    closeAltBuffer();
+
+
     while(!hasQuit){
 
 
@@ -71,11 +89,15 @@ int main(int argc, char ** argv){
         WIDTH = w.ws_col - 2;
         HEIGHT = w.ws_row;
         rend_HEIGHT = HEIGHT - 3;
+        if(update_made){ 
+            // this does work but its chatgpt generated
+            //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+            movecurs(cRow,cCol);
+            update_made = 0;
+        }
         
-        create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,Ystart,xStart);
-        printf("\033[%d;%dH",cRow,cCol);
-
-        snap_left(f_buf, &cRow,&cCol, Ystart-2,-2);
+        snap_left(f_buf, &cRow,&cCol, yStart,xStart,2,2);
         ch = getchar();
         flush_stdin();
 
@@ -91,18 +113,21 @@ int main(int argc, char ** argv){
                         if(cRow > 2){
                              moveup(); 
                         }else{
-                            if(Ystart!= 0)
-                                Ystart-=1;
+                            if(yStart!= 0){
+                                yStart-=1;
+                                update_made = 1;
+                            }
                         }
                         break;
                     case 'B':
-                        if(Ystart+cRow <= linecount){
+                        if(yStart+cRow <= linecount){
                             /*
-                            printf("Ystart+cRow = %d linecount = %d\n",Ystart+cRow,linecount);
+                            printf("yStart+cRow = %d linecount = %d\n",Ystart+cRow,linecount);
                             sleep(1);
                             */
-                            if(cRow == rend_HEIGHT && Ystart+cRow != linecount){ 
-                             Ystart+=1;   
+                            if(cRow == rend_HEIGHT && yStart+cRow != linecount){ 
+                                yStart+=1;   
+                                update_made = 1;
                             }else{
                                 movedown();
                             }
@@ -129,18 +154,24 @@ int main(int argc, char ** argv){
             short ascii_ch = (short)ch;
             if(ascii_ch == 127){ //ascii 127 is backspace
                 if(cCol >= 2){
-                    f_buf[Ystart+cRow-2][xStart+cCol-2] = '\0';
-                    if(cCol > 2)
+                    f_buf[yStart+cRow-2][xStart+cCol-2] = '\0';
+                    movecurs(cRow,cCol);
+                    printf(" ");
+                    if(cCol > 2){
                         moveleft();
+                        moveleft();
+                    }else;
                 }else
                     continue;
             }else if(ascii_ch == 10){ // '\n'
                 movedown();
                 //DO OTHER STUFF TO ALLOCATE NEWLIEN TO FULL_BUFFER
             }else{
-                f_buf[Ystart+cRow-2][xStart+cCol-2] = ch;
-                moveright();
+                f_buf[yStart+cRow-2][xStart+cCol-2] = ch;
+                movecurs(cRow,cCol);
+                printf("%c",ch);
             }
+            update_made = 1;
         }
 
         get_cursor_pos(&cRow,&cCol);
