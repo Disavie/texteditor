@@ -20,5 +20,5 @@ oh okay its because now i am basically writing into unallocated memory so undefi
 this is a side effect of dynamically set lines <br />
 fixed flickering issue on scroll <br />     
             
-
+now can scroll horizontally <br />
 .
