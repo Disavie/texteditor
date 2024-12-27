@@ -55,7 +55,8 @@ int timed_input(double timeout_sec, double * elapsed_time_count) ;
 
 void get_cursor_pos(int * row, int * col);
 
-int countlines(FILE * f);
+size_t countLines(FILE * f);
+size_t countLongestLine(FILE * f);
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range);
  

@@ -171,7 +171,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
 
     setlocale(LC_CTYPE,"");
     //BORDERS
-    const char DEF = '.';
+    const char DEF = ' ';
     wchar_t BLOCK= 0x2588;
     wchar_t LEFTBORD = 0x2595;
     wchar_t RIGHTBORD = 0x258F;
@@ -180,6 +180,10 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
 
     move00();
     hidecursor();
+
+    setTextColor(231);
+    setBgColor(236);
+
 
     int y = 0;
     //setting the starty;
@@ -190,6 +194,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     int x = 0;
     char letter;
     for(int i = yIn-1 ; i < yIn+win_height+1 ; i++){
+        setBgColor(236);
         while(x < startx){
             printf(" ");
             x++;
@@ -209,7 +214,8 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
                 if(j < len){
                     printf("%c",args[i][j]);
                 }else{
-                    printf("\033[2;39m%c\033[0m",DEF);
+                    setBgColor(235);
+                    printf("%c",DEF);
                 }
             }
         }
@@ -304,9 +310,9 @@ void get_cursor_pos(int * row, int * col){
 
 }
 
-int countlines(FILE * f){
+size_t countLines(FILE * f){
     char ch;
-    short linecount = 0;
+    size_t linecount = 0;
     int nonemptyline = 0;
     while((ch = fgetc(f))!=EOF){
         if ( ch == '\n' ){
@@ -322,6 +328,44 @@ int countlines(FILE * f){
         linecount++;
     }
     return linecount;
+}
+
+
+
+size_t countLongestLine(FILE * f){
+ if (f == NULL) {
+        fprintf(stderr, "Invalid f pointer\n");
+        return 0;
+    }
+
+    size_t max_length = 0; // Variable to store the length of the longest line
+    size_t current_length = 0; // Variable to track the current line's length
+    int c;
+
+    // Loop through the f character by character
+    while ((c = fgetc(f)) != EOF) {
+        if (c == '\n') {
+            // If we encounter a newline, check the current line length
+            if (current_length > max_length) {
+                max_length = current_length;
+            }
+            current_length = 0; // Reset the current length for the next line
+        } else {
+            current_length++;
+        }
+    }
+
+    // Handle the case where the last line doesn't end with a newline
+    if (current_length > max_length) {
+        max_length = current_length;
+    }
+
+    // Reset f pointer to the beginning for reuse
+    rewind(f);
+
+    return max_length;
+
+
 }
 
 

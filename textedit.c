@@ -19,7 +19,11 @@ int main(int argc, char ** argv){
     strcpy(filename,argv[1]);
 
     f = fopen(argv[1],"r");
-    int linecount = countlines(f);
+    int linecount = countLines(f);
+    int longestline = countLongestLine(f);
+    printf("longestline in the file %s is %d letters\n",argv[1],(int)longestline);
+    printf("file %s is %d lines\n",argv[1],(int)linecount);
+    sleep(1);
     fclose(f);
 
     int szHelper = linecount; 
@@ -36,12 +40,10 @@ int main(int argc, char ** argv){
     f = fopen(argv[1],"r");    
     int i = 0;
     while(!feof(f) && i < linecount){
-        char line[256];
-
+        char line[512];
         fgets(line,sizeof(line),f);
         size_t len = strlen(line);
-        char * shortened_line = (char *)malloc(len*sizeof(char));
-        f_buf[i] = shortened_line;
+        f_buf[i] = (char *)malloc((len+1)*sizeof(char));
         strcpy(f_buf[i],line);
         if(f_buf[i][len-1] == '\n')
             f_buf[i][len-1]= '\0';
@@ -75,10 +77,6 @@ int main(int argc, char ** argv){
     sleep(2);
     */
 
-    //alternate buffer to reduce flickering
-    openAltBuffer();
-    draw_borders(0,0,rend_HEIGHT,WIDTH);
-    closeAltBuffer();
 
 
     while(!hasQuit){
@@ -111,12 +109,11 @@ int main(int argc, char ** argv){
                 switch (ch){
                     case 'A':
                         if(cRow > 2){
-                             moveup(); 
-                        }else{
-                            if(yStart!= 0){
-                                yStart-=1;
-                                update_made = 1;
-                            }
+                            moveup(); 
+                        }else if(yStart!= 0){
+                            yStart--;
+                            update_made = 1;
+                            
                         }
                         break;
                     case 'B':
@@ -126,7 +123,7 @@ int main(int argc, char ** argv){
                             sleep(1);
                             */
                             if(cRow == rend_HEIGHT && yStart+cRow != linecount){ 
-                                yStart+=1;   
+                                yStart++;   
                                 update_made = 1;
                             }else{
                                 movedown();
@@ -134,10 +131,24 @@ int main(int argc, char ** argv){
                         }
                         break;
                     case 'C':
-                        if(cCol <= WIDTH) moveright();
+                        if(cCol <= WIDTH){
+                            if(cCol == WIDTH && cCol+xStart != longestline){
+                                xStart++;
+                                update_made = 1;
+                            }
+                            else{
+                                moveright();
+                            }
+                        };
                         break;
                     case 'D':
-                        if(cCol > 2) moveleft();
+                        if(cCol > 2){
+                            moveleft(); 
+                        }else if(xStart!= 0){
+                            xStart--;
+                            update_made = 1;
+                            
+                        }
                         break;
                     default:
                         printf("unknown escape sequence: \\033[%c\n",ch);
@@ -185,6 +196,7 @@ int main(int argc, char ** argv){
     }
     fclose(f);
     //restore cursor
+    resetColor();
     clear_screen();
     move00();
     restore_input_mode(&oldtermios);

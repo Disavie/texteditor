@@ -13,6 +13,9 @@
 #define showcursor() printf("\033[?25h");
 #define openAltBuffer() printf("\033[?1049h");
 #define closeAltBuffer() printf("\033[?1049l");
+#define setTextColor(color) printf("\033[38;5;%dm",color);
+#define setBgColor(color) printf("\033[48;5;%dm",color);
+#define resetColor() printf("\033[0m");
 
 
 #endif
