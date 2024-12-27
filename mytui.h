@@ -57,13 +57,21 @@ void get_cursor_pos(int * row, int * col);
 
 size_t countLines(FILE * f);
 size_t countLongestLine(FILE * f);
+size_t countLongestLineBuffer(char ** buffer, size_t length);
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range);
  
-void snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset); 
+int snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset); 
 
 void flush_stdin();
 
-void movecurs(int row, int col);
+char * insert_to_line(char ** buf, char * line, int buf_row, int index_in_line,char ch); 
+char * remove_from_line(char ** buf, char * line, int buf_row, int index);
 
+//will either scroll or move the cursor,, return value is a flag 1 = scroll 0 = moved in x direction
+
+int smart_moveup(int cRow,int *yStart);
+int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT);
+int smart_moveleft(int cCol, int *xStart);
+int smart_moveright(int cCol, int *xStart, int longestline, int WIDHT);
 #endif

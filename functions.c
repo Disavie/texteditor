@@ -1,6 +1,7 @@
 
 #include "ansihelpers.h"
 #include "mytui.h"
+#include <termios.h>
 
 void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGHT][WIDTH]){
     const char DEF = ' ';
@@ -173,15 +174,17 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     //BORDERS
     const char DEF = ' ';
     wchar_t BLOCK= 0x2588;
-    wchar_t LEFTBORD = 0x2595;
-    wchar_t RIGHTBORD = 0x258F;
-    wchar_t BOTTOMBORD = 0x2581;
-    wchar_t TOPBORD  = 0x2594;
-
+    wchar_t VERTICAL_BORDER= 0x2502;
+    wchar_t HORIZONTAL_BORDER= 0x2500;
+    wchar_t TOPLEFTCORNER = 0x250C;
+    wchar_t TOPRIGHTCORNER = 0x2510;
+    wchar_t BOTTOMLEFTCORNER = 0x2514;
+    wchar_t BOTTOMRIGHTCORNER = 0x2518;
+    
     move00();
     hidecursor();
 
-    setTextColor(231);
+    setTextColor(49);
     setBgColor(236);
 
 
@@ -194,33 +197,48 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     int x = 0;
     char letter;
     for(int i = yIn-1 ; i < yIn+win_height+1 ; i++){
-        setBgColor(236);
         while(x < startx){
             printf(" ");
             x++;
         }
-        printf("%lc",LEFTBORD);
+        if(i == yIn -1)
+            printf("%lc",TOPLEFTCORNER);
+        else if(i == yIn+win_height)
+            printf("%lc",BOTTOMLEFTCORNER);
+        else
+            printf("%lc",VERTICAL_BORDER);
+
         size_t len;
         if(i >= 0 && i < yIn+win_height)
              len = strlen(args[i]);
 
+        if(len){
+            setBgColor(236);
+        }else{
+            setBgColor(235);
+        }
+
 
         for(int j = xIn; j < xIn+max_width ; j++){
             if( i == yIn-1){
-                printf("%lc",TOPBORD);
+                printf("%lc",HORIZONTAL_BORDER);
             }else if ( i == yIn+win_height){
-                printf("%lc",BOTTOMBORD);
+                printf("%lc",HORIZONTAL_BORDER);
             }else{
                 if(j < len){
                     printf("%c",args[i][j]);
                 }else{
-                    setBgColor(235);
                     printf("%c",DEF);
                 }
             }
         }
         x = 0;
-        printf("%lc\n",RIGHTBORD);
+        if(i == yIn -1)
+            printf("%lc",TOPRIGHTCORNER );
+        else if(i == yIn+win_height)
+            printf("%lc",BOTTOMRIGHTCORNER);
+        else
+            printf("%lc\n",VERTICAL_BORDER);
     }
     showcursor();
 }
@@ -237,7 +255,9 @@ void set_input_mode(struct termios *old_termios) {
     new_termios = *old_termios;
 
     // Disable buffered input (canonical mode) and echo
-    new_termios.c_lflag &= ~(ICANON | ECHO);
+    new_termios.c_lflag &= ~(ICANON | ECHO );
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
 
     // Set the terminal mode immediately
     tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
@@ -291,22 +311,29 @@ int timed_input(double timeout_sec,double * elapsed_time_count) {
 
 
 void get_cursor_pos(int * row, int * col){
+    char buf[32];
+    int i = 0;
 
+    // Send the ANSI escape sequence to query cursor position
     printf("\033[6n");
-    char ch;
-    int num;
-    scanf("%c",&ch);
 
-    scanf("%c",&ch); //gets rid of the [
-    scanf("%d",&num); 
-    *row = num; 
+    // Read the response: ESC [ rows ; cols R
+    while (i < sizeof(buf) - 1) {
+        if (read(STDIN_FILENO, buf + i, 1) != 1)
+            break;
+        if (buf[i] == 'R')
+            break;
+        i++;
+    }
+    buf[i] = '\0';
 
-    scanf("%c",&ch); //gets rid of the ; 
-    scanf("%d",&num); 
-    *col = num;
-    scanf("%c",&ch); //gets rid of the 'R' left in buffer
 
-    fflush(stdin);
+    if (buf[0] == '\033' && buf[1] == '[') {
+        sscanf(buf + 2, "%d;%d", row, col);
+    } else {
+        *row = -1;
+        *col = -1;
+    }
 
 }
 
@@ -327,6 +354,9 @@ size_t countLines(FILE * f){
     if(nonemptyline){
         linecount++;
     }
+
+
+    rewind(f);
     return linecount;
 }
 
@@ -387,19 +417,119 @@ void flush_stdin(){
     }while(buf!= -1);
 }
 
-void snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset){
+int snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset){
 
     //current line is buffer[cursRow]
     size_t row_len = strlen(buffer[(*cursRow)+yIn-yOffset]);
-    if(row_len < (*cursCol)-xOffset){
-       movecurs(*cursRow,row_len+xOffset); 
+    if(row_len < (*cursCol)+xIn-xOffset){
+        movecurs(*cursRow,(int)row_len+xOffset); 
     }
     get_cursor_pos(cursRow,cursCol);
-    flush_stdin();
+    return 0;
+}
+
+
+char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
+
+    size_t len = strlen(line);
+
+    line = (char *)realloc(line,(len+2)*sizeof(char));
+    if(line == NULL){
+        printf("REALLOC WEIRD");
+        sleep(2);
+    }
+
+
+    // Shift elements to the right to make space for the new element
+    for (size_t i = len+1; i > index_in_line; i--) {
+        line[i] = line[i - 1];
+    }
+
+    // Insert the new element at the specified index
+    line[index_in_line] = ch;
+    buf[buffer_row] = line;
+
+    // Update the length of the array
+    return buf[buffer_row];
+}
+
+
+
+char * remove_from_line(char ** buf, char * line, int buf_row, int index){
+
+    size_t len = strlen(line);
+
+    for(size_t i = index ; i < len; i++)
+        line[i] = line[i+1];
+
+    line = (char *)realloc(line,len*sizeof(char));
+    buf[buf_row] = line;
+
+    return line;
+}
+
+
+int smart_moveup(int cRow,int *yStart){
+    if(cRow > 2){
+        moveup(); 
+    }else if(*yStart!= 0){
+        (*yStart)--;
+        return 1;;
+
+    }
+    return 0;
+}
+
+int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT){
+
+
+    if(*yStart+cRow <= linecount){
+        if(cRow == rend_HEIGHT && *yStart+cRow != linecount){ 
+            (*yStart)++;   
+            return 1;
+        }else{
+            movedown();
+        }
+    }
+    return 0;
 
 }
 
-void movecurs(int row, int col){ printf("\033[%d;%dH",row,col);}
+int smart_moveleft(int cCol,int * xStart){
+
+    if(cCol > 2){
+        moveleft(); 
+    }else if(*xStart!= 0){
+        (*xStart)--;
+        return 1;
+    }
+    return 0;
+
+}
+
+int smart_moveright(int cCol, int *xStart, int longestLineLength, int WIDTH){
+
+    if((*xStart)+cCol <= longestLineLength+1){
+        if(cCol == WIDTH && cCol+(*xStart) != longestLineLength){
+            (*xStart)++;
+            return 1;
+        }
+        else{
+            moveright();
+        }
+
+    }
+    return 0;
+
+}
 
 
-
+size_t countLongestLineBuffer(char ** buffer, size_t length){
+    size_t longest = 0;
+    for(size_t i = 0 ; i < length ; i++){
+        size_t curr = strlen(buffer[i]);
+        if(curr > longest)
+            longest = curr;
+    }
+    return longest;
+}
