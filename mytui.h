@@ -16,7 +16,6 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <string.h>
-//i added this comment in the shit editor also it is having some weird flicker issues
 
 
 typedef struct{
@@ -27,6 +26,13 @@ typedef struct{
     float yvel;
 
 }Player;
+
+
+//ALWAYS LOGS TO A FILE CALLED main.log
+void logChar(char ch);
+void logLine(char * line);
+void logNum(double num);
+void clearLog();
 
 void set_input_mode(struct termios *old_termios); //gets raw terminal input without echo
 void restore_input_mode(struct termios *old_termios); //resets to needing to hit return and echos input
@@ -53,7 +59,7 @@ int timed_input(double timeout_sec, double * elapsed_time_count) ;
 *  usleep((WAITTIME*1000-elapsed_time)*1000); 
 */
 
-void get_cursor_pos(int * row, int * col);
+int get_cursor_pos(int * row, int * col);
 
 size_t countLines(FILE * f);
 size_t countLongestLine(FILE * f);

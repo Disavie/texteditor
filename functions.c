@@ -310,7 +310,7 @@ int timed_input(double timeout_sec,double * elapsed_time_count) {
 }
 
 
-void get_cursor_pos(int * row, int * col){
+int get_cursor_pos(int * row, int * col){
     char buf[32];
     int i = 0;
 
@@ -330,9 +330,9 @@ void get_cursor_pos(int * row, int * col){
 
     if (buf[0] == '\033' && buf[1] == '[') {
         sscanf(buf + 2, "%d;%d", row, col);
+        return 1;
     } else {
-        *row = -1;
-        *col = -1;
+        return 0;
     }
 
 }
@@ -419,31 +419,42 @@ void flush_stdin(){
 
 int snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset){
 
+    logLine("\nIN SNAP LEFT ------------");
     //current line is buffer[cursRow]
-    size_t row_len = strlen(buffer[(*cursRow)+yIn-yOffset]);
-    if(row_len < (*cursCol)+xIn-xOffset){
-        movecurs(*cursRow,(int)row_len+xOffset); 
+    logLine("\ncCol = "); logNum(*cursCol);
+    logLine("\ncRow = "); logNum(*cursRow);
+    size_t line_len = strlen(buffer[(*cursRow)+yIn-yOffset]);
+    logLine("\nline_len = ");logNum(line_len);
+
+    if(line_len < (*cursCol)+xIn-xOffset){
+        movecurs(*cursRow,(int)line_len+xOffset); 
     }
     get_cursor_pos(cursRow,cursCol);
+
+    logLine("\nMOVED TO:");
     return 0;
 }
 
 
 char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
 
+    logLine("in insert_to_line");
+    logLine(line);
     size_t len = strlen(line);
-
+    logLine("got length");
     line = (char *)realloc(line,(len+2)*sizeof(char));
     if(line == NULL){
-        printf("REALLOC WEIRD");
-        sleep(2);
+        logLine("LINE WAS NULL");
     }
 
+    logLine("realloc was fine");
 
     // Shift elements to the right to make space for the new element
     for (size_t i = len+1; i > index_in_line; i--) {
         line[i] = line[i - 1];
     }
+
+    logLine("shifted correctly");
 
     // Insert the new element at the specified index
     line[index_in_line] = ch;
@@ -533,3 +544,26 @@ size_t countLongestLineBuffer(char ** buffer, size_t length){
     }
     return longest;
 }
+
+
+void logLine(char * line){
+
+    FILE * log = fopen("main.log","a");
+    fprintf(log,"%s\n",line);
+    fclose(log);
+}
+void logChar(char ch){
+
+    FILE * log = fopen("main.log","a");
+    fprintf(log,"\\%c\\ ",ch);
+    fclose(log);
+}
+
+void logNum(double num){
+
+    FILE * log = fopen("main.log","a");
+    fprintf(log,"%lf",num);
+    fclose(log);
+}
+
+void clearLog(){ FILE * log = fopen("main.log","w"); fclose(log);}

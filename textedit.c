@@ -5,6 +5,7 @@
 
 int main(int argc, char ** argv){
     openAltBuffer();
+    clearLog();
 
     struct termios oldtermios;
     set_input_mode(&oldtermios);
@@ -88,15 +89,26 @@ int main(int argc, char ** argv){
     char input_buffer[8];
     ssize_t bytes_read;
 
-    while((bytes_read = snap_left(f_buf, &cRow,&cCol, yStart,xStart,2,2) + read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
+    while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
         
 
-        
+        //logLine("-----------New loop");
+             
+
+        //logLine("\ncRow = "); logNum(cRow);
+        //logLine("\ncCol = "); logNum(cCol);
+
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col - 2;
         HEIGHT = w.ws_row;
         rend_HEIGHT = HEIGHT - 3;
+        if(bytes_read == 0) continue;
         ch = input_buffer[0];
+        /*
+        for(int i = 0 ; i < 8 ; i++){
+            logChar(input_buffer[i]);
+        }
+        */
 
 
 
@@ -124,7 +136,9 @@ int main(int argc, char ** argv){
                     printf("unknown escape sequence: \\033[%c\n",ch);
             }
         }else{
+         //   logLine("I am in the default else");
             short ascii_ch = (short)ch;
+          //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
                 if(cCol == 2 && xStart == 0){ //CASE OF DELETING BLANK LINE
 
@@ -138,14 +152,27 @@ int main(int argc, char ** argv){
                 movedown();
                 //DO OTHER STUFF TO ALLOCATE NEWLIEN TO FULL_BUFFER
             }else{
+           //     logLine("\nyStart =");logNum(yStart);
+            //    logLine("\ncRow = ");logNum(cRow);
+             //   logLine("\nyStart +cRow -2 = "); logNum(yStart+cRow-2);
+
                 char * line= insert_to_line(f_buf,f_buf[yStart+cRow-2],yStart+cRow-2, xStart+cCol-2, ch);
+              //  logLine("Inserted!");
                 smart_moveright(cCol,&xStart,longestline,WIDTH);
+
+                get_cursor_pos(&cRow,&cCol);
+
             }
             update_made = 1;
 
         }
+
         
         get_cursor_pos(&cRow,&cCol);
+
+       // logLine("\ncRow = "); logNum(cRow);
+       // logLine("\ncCol = "); logNum(cCol);
+
         if(update_made){ 
             // this does work but its chatgpt generated
             //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
@@ -154,8 +181,25 @@ int main(int argc, char ** argv){
             movecurs(cRow,cCol);
             update_made = 0;
         }
+        memset(input_buffer,'\0',sizeof(input_buffer));
+        //logLine("reset input_buffer");
+
+        //logLine("\ncRow = "); logNum(cRow);
+        //logLine("\ncCol = "); logNum(cCol);
+
+        snap_left(f_buf, &cRow,&cCol, yStart,xStart,2,2);
+
+        get_cursor_pos(&cRow,&cCol);
+        //logLine("end of loop");
 
     }
+
+    if(bytes_read == -1){
+        logLine("error from read()");
+        perror("read");
+   }
+
+
     //saving the file
     f = fopen(argv[1],"w");
     if (f == NULL) printf("error opening file: %s\n",argv[1]);
