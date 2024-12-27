@@ -21,4 +21,15 @@ this is a side effect of dynamically set lines <br />
 fixed flickering issue on scroll <br />     
             
 now can scroll horizontally <br />
+
+
+NOW IS PROPERLY SPAM PROOF <br />
+there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br /> 
+color support
+there is also weirdness with rightside horizontal scrolling 
+
+
+
+
+
 .
