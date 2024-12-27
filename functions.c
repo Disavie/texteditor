@@ -184,7 +184,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     move00();
     hidecursor();
 
-    setTextColor(49);
+    setTextColor(147);
     setBgColor(236);
 
 
@@ -401,11 +401,9 @@ size_t countLongestLine(FILE * f){
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range){
 
-
     for(int i = 0 ; i < orig_height && i < end_range; i++){
         strcpy(dest[i],source[i+start_range]);  
     }
-    
 
 }
 
@@ -417,44 +415,53 @@ void flush_stdin(){
     }while(buf!= -1);
 }
 
-int snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset){
+int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset){
 
     logLine("\nIN SNAP LEFT ------------");
     //current line is buffer[cursRow]
+    logLine("\nxIn = "); logNum(*xIn);
+    logLine("\nyIn = "); logNum(*yIn);
     logLine("\ncCol = "); logNum(*cursCol);
     logLine("\ncRow = "); logNum(*cursRow);
-    size_t line_len = strlen(buffer[(*cursRow)+yIn-yOffset]);
+    size_t line_len = strlen(buffer[(*cursRow)+(*yIn)-yOffset]);
     logLine("\nline_len = ");logNum(line_len);
 
-    if(line_len < (*cursCol)+xIn-xOffset){
-        movecurs(*cursRow,(int)line_len+xOffset); 
+    int status = 1;
+    if(line_len < (*cursCol)+(*xIn)-xOffset){
+        if(*xIn <= line_len){
+            movecurs(*cursRow,(int)line_len-(*xIn)+xOffset); 
+        }else{
+            status = 0;
+        }
     }
+
+    logLine("\nstatus = "); logNum(status);
     get_cursor_pos(cursRow,cursCol);
 
-    logLine("\nMOVED TO:");
-    return 0;
+    //logLine("\nMOVED TO:");
+    return status;
 }
 
 
 char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
 
-    logLine("in insert_to_line");
-    logLine(line);
+    //logLine("in insert_to_line");
+    //logLine(line);
     size_t len = strlen(line);
-    logLine("got length");
+    //logLine("got length");
     line = (char *)realloc(line,(len+2)*sizeof(char));
     if(line == NULL){
         logLine("LINE WAS NULL");
     }
 
-    logLine("realloc was fine");
+    //logLine("realloc was fine");
 
     // Shift elements to the right to make space for the new element
     for (size_t i = len+1; i > index_in_line; i--) {
         line[i] = line[i - 1];
     }
 
-    logLine("shifted correctly");
+    //logLine("shifted correctly");
 
     // Insert the new element at the specified index
     line[index_in_line] = ch;
@@ -493,7 +500,6 @@ int smart_moveup(int cRow,int *yStart){
 
 int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT){
 
-
     if(*yStart+cRow <= linecount){
         if(cRow == rend_HEIGHT && *yStart+cRow != linecount){ 
             (*yStart)++;   
@@ -521,7 +527,7 @@ int smart_moveleft(int cCol,int * xStart){
 int smart_moveright(int cCol, int *xStart, int longestLineLength, int WIDTH){
 
     if((*xStart)+cCol <= longestLineLength+1){
-        if(cCol == WIDTH && cCol+(*xStart) != longestLineLength){
+        if(cCol == WIDTH && cCol+(*xStart) != longestLineLength+1){
             (*xStart)++;
             return 1;
         }
@@ -531,6 +537,31 @@ int smart_moveright(int cCol, int *xStart, int longestLineLength, int WIDTH){
 
     }
     return 0;
+
+}
+
+int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH){
+
+
+    logLine("\n in SMART_MOVERIGHT2----------\n");
+    logLine("linelength = ");logNum(length);
+    logLine("\ncCol = ");logNum(cCol);
+    logLine("\nxStart = ");logNum(*xStart);
+    logLine("\nxOffset = ");logNum(xOffset);
+    logLine("\nlength = ");logNum(length);
+
+
+    if(cCol == WIDTH+1 && (*xStart)+cCol-xOffset < length){
+        (*xStart)++;
+        return 1;
+    }
+
+    if((*xStart+cCol-xOffset) < length)
+        moveright();
+
+    return 0;
+
+
 
 }
 

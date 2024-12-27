@@ -59,6 +59,7 @@ int timed_input(double timeout_sec, double * elapsed_time_count) ;
 *  usleep((WAITTIME*1000-elapsed_time)*1000); 
 */
 
+//returns 1 if it successfully got cur pos
 int get_cursor_pos(int * row, int * col);
 
 size_t countLines(FILE * f);
@@ -67,7 +68,10 @@ size_t countLongestLineBuffer(char ** buffer, size_t length);
 
 void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH], char source[orig_height][WIDTH], short start_range, short end_range);
  
-int snap_left(char** buffer, int * cursRow, int * cursCol, int yIn, int xIn, int yOffset, int xOffset); 
+
+//moves cursor to the left until it is on a char
+//returns 1 if it works or 0 if fail (fail case is if the thing it needs to snap to is not rendered)
+int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset); 
 
 void flush_stdin();
 
@@ -80,4 +84,5 @@ int smart_moveup(int cRow,int *yStart);
 int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT);
 int smart_moveleft(int cCol, int *xStart);
 int smart_moveright(int cCol, int *xStart, int longestline, int WIDHT);
+int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH);
 #endif

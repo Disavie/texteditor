@@ -73,6 +73,8 @@ int main(int argc, char ** argv){
 
     int yStart = 0;
     int xStart = 0;
+    int yOffset = 2;
+    int xOffset = 2;
     int cRow = 2;
     int cCol = 2;
     int hasQuit = 0;
@@ -97,9 +99,9 @@ int main(int argc, char ** argv){
 
         //logLine("\ncRow = "); logNum(cRow);
         //logLine("\ncCol = "); logNum(cCol);
-
+        //clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        WIDTH = w.ws_col - 2;
+        WIDTH = w.ws_col - xOffset;
         HEIGHT = w.ws_row;
         rend_HEIGHT = HEIGHT - 3;
         if(bytes_read == 0) continue;
@@ -125,7 +127,7 @@ int main(int argc, char ** argv){
                         update_made = 1;
                     break;
                 case 'C':
-                    if(smart_moveright(cCol,&xStart,longestline,WIDTH))
+                    if(smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),WIDTH))
                         update_made = 1;
                     break;
                 case 'D':
@@ -140,7 +142,7 @@ int main(int argc, char ** argv){
             short ascii_ch = (short)ch;
           //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol == 2 && xStart == 0){ //CASE OF DELETING BLANK LINE
+                if(cCol == xOffset && xStart == 0){ //CASE OF DELETING BLANK LINE
 
 
                 }else{
@@ -156,10 +158,11 @@ int main(int argc, char ** argv){
             //    logLine("\ncRow = ");logNum(cRow);
              //   logLine("\nyStart +cRow -2 = "); logNum(yStart+cRow-2);
 
-                char * line= insert_to_line(f_buf,f_buf[yStart+cRow-2],yStart+cRow-2, xStart+cCol-2, ch);
+                char * line= insert_to_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset, xStart+cCol-xOffset, ch);
               //  logLine("Inserted!");
-                smart_moveright(cCol,&xStart,longestline,WIDTH);
-
+                longestline = countLongestLineBuffer(f_buf,szHelper);
+                //smart_moveright(cCol,&xStart,longestline,WIDTH);
+                smart_moveright2(cCol, &xStart, xOffset, strlen(line), WIDTH);
                 get_cursor_pos(&cRow,&cCol);
 
             }
@@ -186,9 +189,14 @@ int main(int argc, char ** argv){
 
         //logLine("\ncRow = "); logNum(cRow);
         //logLine("\ncCol = "); logNum(cCol);
-
-        snap_left(f_buf, &cRow,&cCol, yStart,xStart,2,2);
-
+        if(!snap_left(f_buf, &cRow,&cCol,&yStart,&xStart,yOffset,xOffset)){
+            get_cursor_pos(&cRow,&cCol);
+            size_t len = strlen(f_buf[cRow+yStart-yOffset]);
+            xStart = len-1;
+            cCol = 3;
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+            movecurs(cRow,cCol);
+        }
         get_cursor_pos(&cRow,&cCol);
         //logLine("end of loop");
 

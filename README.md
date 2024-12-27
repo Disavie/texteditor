@@ -25,11 +25,11 @@ now can scroll horizontally <br />
 
 NOW IS PROPERLY SPAM PROOF <br />
 there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br /> 
-color support
-there is also weirdness with rightside horizontal scrolling 
+color support <br />
+there is also weirdness with rightside horizontal scrolling <br />
 
-
-
+horizontal scrolling is 100% working now <br />
+afaik the line snapping is working perfectly too <br />
 
 
 .
