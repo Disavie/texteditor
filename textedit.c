@@ -70,6 +70,9 @@ int main(int argc, char ** argv){
 
 
     short rend_HEIGHT = HEIGHT - 3;
+    if(szHelper < HEIGHT){
+        szHelper = HEIGHT;
+    }
 
     int yStart = 0;
     int xStart = 0;
@@ -85,7 +88,7 @@ int main(int argc, char ** argv){
     printf("height = %d, width = %d, yStart = %d, xStart = %d\n",HEIGHT,WIDTH,Ystart,xStart);
     sleep(2);
     */
-    create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+    create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart,linecount);
     movecurs(cRow,cCol);
 
     char input_buffer[8];
@@ -142,18 +145,40 @@ int main(int argc, char ** argv){
             short ascii_ch = (short)ch;
           //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol == xOffset && xStart == 0){ //CASE OF DELETING LINE
+                if(cCol == xOffset && xStart == 0 && cRow-yStart != yOffset){ //CASE OF DELETING LINE
+                    logLine("in backspace");
+
+                    char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
+                    if(removed_line == NULL){
+                        logLine("NULL");
+                    }else if(removed_line[0] == '\n'){
+                            logLine("newline");
+                    }else if(removed_line[0] == '\0'){
+                            logLine("nullchar");
+                    }else logLine(removed_line);    
 
 
+                    if(removed_line[0] != '\0'){
+                        char * aboveline = f_buf[yStart+cRow-yOffset-1]; 
+                        size_t alen = strlen(aboveline);
+                        size_t rlen = strlen(removed_line);
+                        logNum(rlen);
+                        char * newabove= (char *)realloc(aboveline,(alen+rlen+1)*sizeof(char));
+                        logLine("realloc passed");   
+                        aboveline = newabove;
+                        f_buf[yStart+cRow-yOffset-1] = aboveline;
+                        char * o = strcat(aboveline,removed_line);
+                        free(removed_line);
+                        moveup(); //<-replace this with a properly snapping and scrolling 
+                        logLine("done !");
+                    }else;
                 }else{
-
                     char * line = remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-xOffset,xStart+cCol-xOffset-1);
                     smart_moveleft(cCol,&xStart);
                 }
             }else if(ascii_ch == 10){ // '\n'
 
 
-                logLine("\\n case___________________");
                 size_t copy_start = xStart+cCol-xOffset;
                 size_t line_index = yStart+cRow-yOffset;
                 char * line = f_buf[line_index];
@@ -176,17 +201,14 @@ int main(int argc, char ** argv){
                         shortened_line = "\0";
                     }
                     f_buf[line_index] = shortened_line;
-                    logLine(shortened_line);
-                    logLine(newl);
-
                     //Insert line
-                    movedown();
-                    char * t = insert_line(&f_buf,newl,line_index+1,&szHelper);
+                    char * t = insert_line(&f_buf,newl,line_index+1,&linecount);
                 }else{
-                    char * t = insert_line(&f_buf,"\0",line_index+1,&szHelper);
+                    char * t = insert_line(&f_buf,"\0",line_index+1,&linecount);
                 }
-                logLine(f_buf[0]);
-                logLine("done!");
+                movedown();
+                get_cursor_pos(&cRow,&cCol);
+                snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
             }else{
            //     logLine("\nyStart =");logNum(yStart);
             //    logLine("\ncRow = ");logNum(cRow);
@@ -214,9 +236,10 @@ int main(int argc, char ** argv){
             // this does work but its chatgpt generated
             //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
             logLine("updating buffer!");
-            longestline = countLongestLineBuffer(f_buf,szHelper);
+            longestline = countLongestLineBuffer(f_buf,linecount);
             logLine("checked longestline");
-            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart,linecount);
+            logLine("reprinted window");
             movecurs(cRow,cCol);
             update_made = 0;
         }
@@ -225,6 +248,9 @@ int main(int argc, char ** argv){
 
         //logLine("\ncRow = "); logNum(cRow);
         //logLine("\ncCol = "); logNum(cCol);
+        //void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH);
+        snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
+        /*
         if(!snap_left(f_buf, &cRow,&cCol,&yStart,&xStart,yOffset,xOffset)){
             get_cursor_pos(&cRow,&cCol);
             size_t len = strlen(f_buf[cRow+yStart-yOffset]);
@@ -233,6 +259,7 @@ int main(int argc, char ** argv){
             create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
             movecurs(cRow,cCol);
         }
+        */
         get_cursor_pos(&cRow,&cCol);
         //logLine("end of loop");
 
@@ -247,7 +274,7 @@ int main(int argc, char ** argv){
     //saving the file
     f = fopen(argv[1],"w");
     if (f == NULL) printf("error opening file: %s\n",argv[1]);
-    for(int i = 0 ; i < szHelper; i++){
+    for(int i = 0 ; i < linecount; i++){
         fprintf(f,"%s\n",f_buf[i]);
     }
     fclose(f);

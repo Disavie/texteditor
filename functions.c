@@ -168,7 +168,7 @@ void noflicker_create_window_inoutRANGE(int startx, int starty, int win_height, 
 }
 
 
-void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn){ 
+void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn,size_t linecount){ 
 
     setlocale(LC_CTYPE,"");
     //BORDERS
@@ -208,8 +208,8 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
         else
             printf("%lc",VERTICAL_BORDER);
 
-        size_t len;
-        if(i >= 0 && i < yIn+win_height)
+        size_t len = 0;
+        if(i >= 0 && i < yIn+win_height && i+yIn < linecount)
              len = strlen(args[i]);
 
         if(len){
@@ -227,6 +227,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
             }else{
                 if(j < len){
                     printf("%c",args[i][j]);
+      //              logChar(args[i][j]);
                 }else{
                     printf("%c",DEF);
                 }
@@ -237,8 +238,11 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
             printf("%lc",TOPRIGHTCORNER );
         else if(i == yIn+win_height)
             printf("%lc",BOTTOMRIGHTCORNER);
-        else
+        else{
             printf("%lc\n",VERTICAL_BORDER);
+       //     logChar('\n');
+        }
+            
     }
     showcursor();
 }
@@ -442,17 +446,24 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, i
     return status;
 }
 
-char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) {
-    // Validate input parameters
-    if (buf == NULL || *buf == NULL || line == NULL || buf_row < 0 || buf_row > *buf_height) {
-        return "Invalid arguments";
-    }
 
-    // Reallocate the buffer to accommodate one more line
+void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
+
+        if(!snap_left(f_buf, cRow,cCol,yStart,xStart,yOffset,xOffset)){
+            get_cursor_pos(cRow,cCol);
+            size_t len = strlen(f_buf[(*cRow)+(*yStart)-yOffset]);
+            *xStart = len-1;
+            *cCol = 3;
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,*yStart,*xStart,linecount);
+            movecurs(*cRow,*cCol);
+        }
+
+
+}
+
+char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) {
+
     char **new_buf = realloc(*buf, (*buf_height + 1) * sizeof(char *));
-    if (new_buf == NULL) {
-        return "Memory allocation failed";
-    }
     *buf = new_buf;
 
     // Shift lines down from buf_row to make room for the new line
@@ -472,6 +483,29 @@ char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) {
 
     return NULL;  // Return NULL to indicate success
 }
+
+
+char *remove_line(char ***buf, int buf_row, size_t *buf_height) {
+
+    char *removed_line = (*buf)[buf_row];
+
+    // Shift all lines after buf_row up by one position
+    for (size_t i = buf_row; i < *buf_height - 1; i++) {
+        (*buf)[i] = (*buf)[i + 1];
+    }
+
+    (*buf_height)--;
+
+    // Reallocate memory for the buffer to fit the new height
+    char **new_buf = realloc(*buf, (*buf_height) * sizeof(char *));
+
+    // Update the buffer pointer
+    *buf = new_buf;
+
+    // Return the removed line
+    return removed_line;
+}
+
 
 char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
 
@@ -616,7 +650,10 @@ void logLine(char * line){
 void logChar(char ch){
 
     FILE * log = fopen("main.log","a");
-    fprintf(log,"\\%c\\ ",ch);
+    if(ch != '\0')
+        fprintf(log,"\\%c\\ ",ch);
+    else
+        fprintf(log,"\\\\");
     fclose(log);
 }
 

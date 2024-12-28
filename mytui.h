@@ -43,7 +43,7 @@ void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGH
 /*
  * Creates screen from a range in the buffer args between in and out, given that HEIGHT > (out - in)
  */
-void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn); 
+void create_window_inoutRANGE(int startx, int starty, int HEIGHT,int WIDTH, char ** args,int yIn, int xIn,size_t linecount); 
 void noflicker_create_window_inoutRANGE(int startx, int starty, int win_height, int max_width, char **args, int yIn, int xIn);
 
 void draw_borders(int startx, int starty, int win_height, int win_width);
@@ -72,14 +72,14 @@ void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH]
 //moves cursor to the left until it is on a char
 //returns 1 if it works or 0 if fail (fail case is if the thing it needs to snap to is not rendered)
 int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset); 
-void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset);
+void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount);
 
 void flush_stdin();
 
 char * insert_to_line(char ** buf, char * line, int buf_row, int index_in_line,char ch); 
 char * remove_from_line(char ** buf, char * line, int buf_row, int index);
 char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) ;
-char * remove_line(char ** buf, int buf_row);
+char * remove_line(char *** buf, int buf_row, size_t *buf_height);
 
 //will either scroll or move the cursor,, return value is a flag 1 = scroll 0 = moved in x direction
 
