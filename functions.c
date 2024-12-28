@@ -185,6 +185,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     short text_color = 230;
     short bg_file_color = 236;
     short bg_unused_color = 235; 
+    short comment_color = 144;
     
     move00();
     hidecursor();
@@ -201,6 +202,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     int x = 0;
     char letter;
     for(int i = yIn-1 ; i < yIn+win_height+1 ; i++){
+        short isReal = 0;
         while(x < startx){
             printf(" ");
             x++;
@@ -208,6 +210,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
         size_t len = 0;
         if(i >= 0 && i < yIn+win_height){
             if(i < linecount){
+                isReal = 1;
                 len = strlen(args[i]);
                 setBgColor(bg_file_color);
             }else{
@@ -218,16 +221,31 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
         if(i == yIn-1){
             setTextColor(border_color);
             printf("%lc",TOPLEFTCORNER);
+            for(int i = 0 ; i < 5 ; i++)
+                printf("%lc",HORIZONTAL_BORDER);
             setTextColor(0);
         }else if(i == yIn+win_height){
             setTextColor(border_color);
             printf("%lc",BOTTOMLEFTCORNER);
+            for(int i = 0 ; i < 5 ; i++)
+                printf("%lc",HORIZONTAL_BORDER);
             setTextColor(0);
         }else{
             setTextColor(border_color);
             printf("%lc",VERTICAL_BORDER);
             setTextColor(0);
+            if(isReal){
+                setTextColor(comment_color);
+                printf("%4d ",i+1);
+                setTextColor(0);
+            }else{
+                setTextColor(comment_color);
+                printf("   ~ ");
+                setTextColor(0);
+            }
         }
+
+    
 
 
         for(int j = xIn; j < xIn+max_width ; j++){
@@ -268,7 +286,12 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     showcursor();
 }
 
+void printRightAlign(int num, short width){
 
+
+
+
+}
 
 
 
@@ -440,7 +463,7 @@ void flush_stdin(){
     }while(buf!= -1);
 }
 
-int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset){
+int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, short yOffset,short xOffset){
 
     logLine("\nIN SNAP LEFT ------------");
     //current line is buffer[cursRow]
@@ -469,7 +492,16 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, i
 }
 
 
-void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
+int snap_right(char * line, int cRow, short xOffset){
+
+    size_t len = strlen(line);
+    movecurs(cRow,(int)(len+xOffset));
+    return 1;
+}
+
+
+
+void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
         logLine("linecount = ");logNum(linecount);
         if(!snap_left(f_buf, cRow,cCol,yStart,xStart,yOffset,xOffset)){
             get_cursor_pos(cRow,cCol);
@@ -484,8 +516,6 @@ void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xSta
             create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,*yStart,*xStart,linecount);
             movecurs(*cRow,*cCol);
         }
-
-
 }
 
 char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) {
@@ -578,8 +608,8 @@ char * remove_from_line(char ** buf, char * line, int buf_row, int index){
 }
 
 
-int smart_moveup(int cRow,int *yStart){
-    if(cRow > 2){
+int smart_moveup(int cRow,int *yStart,short yOffset){
+    if(cRow > yOffset){
         moveup(); 
     }else if(*yStart!= 0){
         (*yStart)--;
@@ -608,10 +638,9 @@ int smart_movedown(int cRow, int *yStart,int flag, int linecount, int rend_HEIGH
     return 0;
 
 }
+int smart_moveleft(int cCol,int * xStart,short xOffset){
 
-int smart_moveleft(int cCol,int * xStart){
-
-    if(cCol > 2){
+    if(cCol > xOffset){
         moveleft(); 
     }else if(*xStart!= 0){
         (*xStart)--;

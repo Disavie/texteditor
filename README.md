@@ -56,4 +56,11 @@ commit #8 <br />
 12/27/2024 <br />
 bug fix creating newline if cursor at rend_HEIGHT wouldnt work <br />
 
+commit #9 <br />
+fixed a bug with scrolling <br />
+now shows line numbers and ~ for empty lines <br />
+going on plane so in case i fuck anything up i have a good backup <br />
+need to fix delete \n cursor movement <br />
+
+
 .

@@ -71,8 +71,9 @@ void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH]
 
 //moves cursor to the left until it is on a char
 //returns 1 if it works or 0 if fail (fail case is if the thing it needs to snap to is not rendered)
-int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset); 
-void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount);
+int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, short yOffset, short xOffset); 
+int snap_right(char * line, int cRow, short xOffset);
+void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount);
 
 void flush_stdin();
 
@@ -83,9 +84,11 @@ char * remove_line(char *** buf, int buf_row, size_t *buf_height);
 
 //will either scroll or move the cursor,, return value is a flag 1 = scroll 0 = moved in x direction
 
-int smart_moveup(int cRow,int *yStart);
+int smart_moveup(int cRow,int *yStart,short yOffset);
 int smart_movedown(int cRow, int *yStart,  int flag,int linecount, int rend_HEIGHT);
-int smart_moveleft(int cCol, int *xStart);
+int smart_moveleft(int cCol, int *xStart, short xOffset);
 int smart_moveright(int cCol, int *xStart, int longestline, int WIDHT);
 int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH);
 #endif
+
+

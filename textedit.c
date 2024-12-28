@@ -14,7 +14,7 @@ int main(int argc, char ** argv){
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-    short WIDTH = w.ws_col - 2;
+    short WIDTH = w.ws_col;
     short HEIGHT = w.ws_row;
 
     char ch; 
@@ -69,7 +69,6 @@ int main(int argc, char ** argv){
     printf("exited the file successfully\n");
 
 
-    short rend_HEIGHT = HEIGHT - 3;
     if(szHelper < HEIGHT){
         szHelper = HEIGHT;
     }
@@ -77,18 +76,16 @@ int main(int argc, char ** argv){
     int yStart = 0;
     int xStart = 0;
     int yOffset = 2;
-    int xOffset = 2;
-    int cRow = 2;
-    int cCol = 2;
+    int xOffset = 7;
+    short rend_HEIGHT = HEIGHT - yOffset-1;
+    short rend_WIDTH = WIDTH - xOffset;
+    int cRow = yOffset;
+    int cCol = xOffset;
     int hasQuit = 0;
     short update_made = 1;
     ch = '\0';
-    /*
-    printf("got here\n");
-    printf("height = %d, width = %d, yStart = %d, xStart = %d\n",HEIGHT,WIDTH,Ystart,xStart);
-    sleep(2);
-    */
-    create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart,linecount);
+
+    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
     movecurs(cRow,cCol);
 
     char input_buffer[8];
@@ -104,9 +101,10 @@ int main(int argc, char ** argv){
         //logLine("\ncCol = "); logNum(cCol);
         clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        WIDTH = w.ws_col - xOffset;
+        WIDTH = w.ws_col;
         HEIGHT = w.ws_row;
-        rend_HEIGHT = HEIGHT - 3;
+        rend_HEIGHT = HEIGHT - yOffset-1;
+        rend_WIDTH = WIDTH - xOffset ;
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
         /*
@@ -122,7 +120,7 @@ int main(int argc, char ** argv){
         }else if (ch == '\033' && input_buffer[1] == '['){
             switch (input_buffer[2]){
                 case 'A':
-                    if(smart_moveup(cRow,&yStart))
+                    if(smart_moveup(cRow,&yStart,yOffset))
                         update_made = 1;
                     break;
                 case 'B':
@@ -130,11 +128,11 @@ int main(int argc, char ** argv){
                         update_made = 1;
                     break;
                 case 'C':
-                    if(smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),WIDTH))
+                    if(smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH))
                         update_made = 1;
                     break;
                 case 'D':
-                    if(smart_moveleft(cCol,&xStart))
+                    if(smart_moveleft(cCol,&xStart,xOffset))
                         update_made = 1;
                     break;
                 default:
@@ -149,6 +147,10 @@ int main(int argc, char ** argv){
                     logLine("in backspace");
 
                     char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
+                    smart_moveup(cRow,&yStart,yOffset);
+                    get_cursor_pos(&cRow,&cCol);
+                    snap_right(f_buf[yStart+cRow-yOffset],cRow,xOffset);
+                    //snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
                     if(removed_line == NULL){
                         logLine("NULL");
                     }else if(removed_line[0] == '\n'){
@@ -159,23 +161,23 @@ int main(int argc, char ** argv){
 
 
                     if(removed_line[0] != '\0'){
-                        char * aboveline = f_buf[yStart+cRow-yOffset-1]; 
+                        char * aboveline = f_buf[yStart+cRow-yOffset]; 
                         size_t alen = strlen(aboveline);
                         size_t rlen = strlen(removed_line);
                         logNum(rlen);
                         char * newabove= (char *)realloc(aboveline,(alen+rlen+1)*sizeof(char));
                         logLine("realloc passed");   
                         aboveline = newabove;
-                        f_buf[yStart+cRow-yOffset-1] = aboveline;
+                        f_buf[yStart+cRow-yOffset] = aboveline;
                         char * o = strcat(aboveline,removed_line);
                         free(removed_line);
                     }else ;
                     logLine("done removing");
-                    moveup();
-
                 }else{
-                    char * line = remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-xOffset,xStart+cCol-xOffset-1);
-                    smart_moveleft(cCol,&xStart);
+                    logLine("_____REMOVEFROMLINE_____");
+                    char * line = f_buf[yStart+cRow-yOffset];
+                    char * ret = remove_from_line(f_buf,line,yStart+cRow-yOffset,xStart+cCol-xOffset-1);
+                    smart_moveleft(cCol,&xStart,xOffset);
                 }
             }else if(ascii_ch == 10){ // '\n'
 
@@ -201,22 +203,26 @@ int main(int argc, char ** argv){
                     }else{
                         shortened_line = "\0";
                     }
+
                     f_buf[line_index] = shortened_line;
                     //Insert line
                     char * t = insert_line(&f_buf,newl,line_index+1,&linecount);
                 }else{
                     logLine("inserting blank new line");
-                    char * t = insert_line(&f_buf,"\0",line_index+1,&linecount);
+                    char * line = "\0";
+                    char * t = insert_line(&f_buf,line,line_index+1,&linecount);
                 }
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
-                snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
+                create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount);
+                //snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+                movecurs(cRow,xOffset);
             }else{
 
                 char * line= insert_to_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset, xStart+cCol-xOffset, ch);
                 longestline = countLongestLineBuffer(f_buf,linecount);
                 //smart_moveright(cCol,&xStart,longestline,WIDTH);
-                smart_moveright2(cCol, &xStart, xOffset, strlen(line), WIDTH);
+                smart_moveright2(cCol, &xStart, xOffset, strlen(line), rend_WIDTH);
 
             }
             logLine("update_made = 1");
@@ -229,13 +235,13 @@ int main(int argc, char ** argv){
             //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
             longestline = countLongestLineBuffer(f_buf,linecount);
             logLine("longestline =");logNum(longestline);
-            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart,linecount);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
             logLine("window updated");
             movecurs(cRow,cCol);
             update_made = 0;
         }
         memset(input_buffer,'\0',sizeof(input_buffer));
-        snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
+        snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
         get_cursor_pos(&cRow,&cCol);
 
     }
