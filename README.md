@@ -1,17 +1,17 @@
 shitty terminal based text editor using basically only ansi escape sequences to move the cursor  <br />
 and do that stuff  <br />
+
+commit #1
 FIX THE ERROR OF TWO KEY PRESSES AT ONCE, look up "cannonical terminal input mode"  <br />
 first commit is with 1 buffer for entire file with in-out range <br />
 cant add newlines to the text file  <br />
 
-
-
-
+commit #2
 added future support for horizontal text scrolling for long ass lines  <br />
 added vertical scroll support <br />
 going to add proper implementation for \n \t text insert and backspace <br />
 
-
+commit #3
 improved line snapping feature <br />
 lines are dynamically allocated instead of bein set length <br />
 still need to fix typing too fast <br />
@@ -19,25 +19,28 @@ why are these lines getting synced with each other <br />
 oh okay its because now i am basically writing into unallocated memory so undefined behavior <br />
 this is a side effect of dynamically set lines <br />
 fixed flickering issue on scroll <br />     
-            
+         
+commit #4   
 now can scroll horizontally <br />
 
-
+commit #5
 NOW IS PROPERLY SPAM PROOF <br />
 there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br /> 
 color support <br />
 there is also weirdness with rightside horizontal scrolling <br />
 
+commit #6
 horizontal scrolling is 100% working now <br />
 afaik the line snapping is working perfectly too <br />
 added easy logging functionality too <br />
 
-
+commit #7
 added deleting and creating new lines, still need to implement the cursor moving to the correct place though <br />
 scrolling works perfectly <br />
 more color support on the window being draw <br />
 need to add command line and make it modal now <br />
 
+commit #8
 12/27/2024 <br />
 bug fix creating newline if cursor at rend_HEIGHT wouldnt work <br />
 
