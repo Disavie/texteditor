@@ -180,12 +180,16 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     wchar_t TOPRIGHTCORNER = 0x2510;
     wchar_t BOTTOMLEFTCORNER = 0x2514;
     wchar_t BOTTOMRIGHTCORNER = 0x2518;
+
+    short border_color = 230; 
+    short text_color = 230;
+    short bg_file_color = 236;
+    short bg_unused_color = 235; 
     
     move00();
     hidecursor();
 
-    setTextColor(147);
-    setBgColor(236);
+    setBgColor(bg_file_color);
 
 
     int y = 0;
@@ -201,46 +205,63 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
             printf(" ");
             x++;
         }
-        if(i == yIn -1)
-            printf("%lc",TOPLEFTCORNER);
-        else if(i == yIn+win_height)
-            printf("%lc",BOTTOMLEFTCORNER);
-        else
-            printf("%lc",VERTICAL_BORDER);
-
         size_t len = 0;
-        if(i >= 0 && i < yIn+win_height && i+yIn < linecount)
-             len = strlen(args[i]);
+        if(i >= 0 && i < yIn+win_height){
+            if(i < linecount){
+                len = strlen(args[i]);
+                setBgColor(bg_file_color);
+            }else{
+                setBgColor(bg_unused_color);
+            }
 
-        if(len){
-            setBgColor(236);
+        }
+        if(i == yIn-1){
+            setTextColor(border_color);
+            printf("%lc",TOPLEFTCORNER);
+            setTextColor(0);
+        }else if(i == yIn+win_height){
+            setTextColor(border_color);
+            printf("%lc",BOTTOMLEFTCORNER);
+            setTextColor(0);
         }else{
-            setBgColor(235);
+            setTextColor(border_color);
+            printf("%lc",VERTICAL_BORDER);
+            setTextColor(0);
         }
 
 
         for(int j = xIn; j < xIn+max_width ; j++){
             if( i == yIn-1){
+                setTextColor(border_color);
                 printf("%lc",HORIZONTAL_BORDER);
+                setTextColor(0);
             }else if ( i == yIn+win_height){
+                setTextColor(border_color);
                 printf("%lc",HORIZONTAL_BORDER);
+                setTextColor(0);
             }else{
                 if(j < len){
+                    setTextColor(text_color);
                     printf("%c",args[i][j]);
-      //              logChar(args[i][j]);
+                    setTextColor(0);
                 }else{
                     printf("%c",DEF);
                 }
             }
         }
         x = 0;
-        if(i == yIn -1)
+        if(i == yIn -1){
+            setTextColor(border_color);
             printf("%lc",TOPRIGHTCORNER );
-        else if(i == yIn+win_height)
+            setTextColor(0);
+        }else if(i == yIn+win_height){
+            setTextColor(border_color);
             printf("%lc",BOTTOMRIGHTCORNER);
-        else{
+            setTextColor(0);
+        }else{
+            setTextColor(border_color);
             printf("%lc\n",VERTICAL_BORDER);
-       //     logChar('\n');
+            setTextColor(0);
         }
             
     }
@@ -427,6 +448,7 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, i
     logLine("\nyIn = "); logNum(*yIn);
     logLine("\ncCol = "); logNum(*cursCol);
     logLine("\ncRow = "); logNum(*cursRow);
+    logLine("looking at line:");logLine(buffer[(*cursRow)+(*yIn)-yOffset]);
     size_t line_len = strlen(buffer[(*cursRow)+(*yIn)-yOffset]);
     logLine("\nline_len = ");logNum(line_len);
 
@@ -448,12 +470,17 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, i
 
 
 void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
-
+        logLine("linecount = ");logNum(linecount);
         if(!snap_left(f_buf, cRow,cCol,yStart,xStart,yOffset,xOffset)){
             get_cursor_pos(cRow,cCol);
             size_t len = strlen(f_buf[(*cRow)+(*yStart)-yOffset]);
-            *xStart = len-1;
-            *cCol = 3;
+            if(len != 0){
+                *xStart = len-1;
+                *cCol = xOffset+1;
+            }else{
+                *xStart = len;
+                *cCol = xOffset;
+            }
             create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,*yStart,*xStart,linecount);
             movecurs(*cRow,*cCol);
         }
@@ -562,10 +589,16 @@ int smart_moveup(int cRow,int *yStart){
     return 0;
 }
 
-int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT){
-
+int smart_movedown(int cRow, int *yStart,int flag, int linecount, int rend_HEIGHT){
+    /*
+    logLine("-in smart_movedown-");
+    logLine("\ncRow = ");logNum(cRow);
+    logLine("\n*yStart = ");logNum(*yStart);
+    logLine("\nlinecount = ");logNum(linecount);
+    logLine("\nrend_HEIGHT = ");logNum(rend_HEIGHT);
+    */ 
     if(*yStart+cRow <= linecount){
-        if(cRow == rend_HEIGHT && *yStart+cRow != linecount){ 
+        if(cRow == rend_HEIGHT && (flag || *yStart+cRow != linecount)){ 
             (*yStart)++;   
             return 1;
         }else{

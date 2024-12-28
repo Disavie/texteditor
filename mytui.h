@@ -84,7 +84,7 @@ char * remove_line(char *** buf, int buf_row, size_t *buf_height);
 //will either scroll or move the cursor,, return value is a flag 1 = scroll 0 = moved in x direction
 
 int smart_moveup(int cRow,int *yStart);
-int smart_movedown(int cRow, int *yStart, int linecount, int rend_HEIGHT);
+int smart_movedown(int cRow, int *yStart,  int flag,int linecount, int rend_HEIGHT);
 int smart_moveleft(int cCol, int *xStart);
 int smart_moveright(int cCol, int *xStart, int longestline, int WIDHT);
 int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH);

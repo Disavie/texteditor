@@ -126,7 +126,7 @@ int main(int argc, char ** argv){
                         update_made = 1;
                     break;
                 case 'B':
-                    if(smart_movedown(cRow,&yStart,linecount,rend_HEIGHT))
+                    if(smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT))
                         update_made = 1;
                     break;
                 case 'C':
@@ -145,16 +145,16 @@ int main(int argc, char ** argv){
             short ascii_ch = (short)ch;
           //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol == xOffset && xStart == 0 && cRow-yStart != yOffset){ //CASE OF DELETING LINE
+                if(cCol == xOffset && xStart == 0 && yStart+cRow-yOffset != 0){ //CASE OF DELETING LINE
                     logLine("in backspace");
 
                     char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
                     if(removed_line == NULL){
                         logLine("NULL");
                     }else if(removed_line[0] == '\n'){
-                            logLine("newline");
+                        logLine("newline");
                     }else if(removed_line[0] == '\0'){
-                            logLine("nullchar");
+                        logLine("nullchar");
                     }else logLine(removed_line);    
 
 
@@ -169,9 +169,10 @@ int main(int argc, char ** argv){
                         f_buf[yStart+cRow-yOffset-1] = aboveline;
                         char * o = strcat(aboveline,removed_line);
                         free(removed_line);
-                        moveup(); //<-replace this with a properly snapping and scrolling 
-                        logLine("done !");
-                    }else;
+                    }else ;
+                    logLine("done removing");
+                    moveup();
+
                 }else{
                     char * line = remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-xOffset,xStart+cCol-xOffset-1);
                     smart_moveleft(cCol,&xStart);
@@ -206,62 +207,35 @@ int main(int argc, char ** argv){
                 }else{
                     char * t = insert_line(&f_buf,"\0",line_index+1,&linecount);
                 }
-                movedown();
+                smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
                 snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
             }else{
-           //     logLine("\nyStart =");logNum(yStart);
-            //    logLine("\ncRow = ");logNum(cRow);
-             //   logLine("\nyStart +cRow -2 = "); logNum(yStart+cRow-2);
 
                 char * line= insert_to_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset, xStart+cCol-xOffset, ch);
-              //  logLine("Inserted!");
-                longestline = countLongestLineBuffer(f_buf,szHelper);
+                longestline = countLongestLineBuffer(f_buf,linecount);
                 //smart_moveright(cCol,&xStart,longestline,WIDTH);
                 smart_moveright2(cCol, &xStart, xOffset, strlen(line), WIDTH);
-                get_cursor_pos(&cRow,&cCol);
 
             }
+            logLine("update_made = 1");
             update_made = 1;
-
         }
-
-        
         get_cursor_pos(&cRow,&cCol);
-
-       // logLine("\ncRow = "); logNum(cRow);
-       // logLine("\ncCol = "); logNum(cCol);
 
         if(update_made){ 
             // this does work but its chatgpt generated
             //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
-            logLine("updating buffer!");
             longestline = countLongestLineBuffer(f_buf,linecount);
-            logLine("checked longestline");
+            logLine("longestline =");logNum(longestline);
             create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart,linecount);
-            logLine("reprinted window");
+            logLine("window updated");
             movecurs(cRow,cCol);
             update_made = 0;
         }
         memset(input_buffer,'\0',sizeof(input_buffer));
-        //logLine("reset input_buffer");
-
-        //logLine("\ncRow = "); logNum(cRow);
-        //logLine("\ncCol = "); logNum(cCol);
-        //void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH);
         snapCursor(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,WIDTH,linecount);
-        /*
-        if(!snap_left(f_buf, &cRow,&cCol,&yStart,&xStart,yOffset,xOffset)){
-            get_cursor_pos(&cRow,&cCol);
-            size_t len = strlen(f_buf[cRow+yStart-yOffset]);
-            xStart = len-1;
-            cCol = 3;
-            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
-            movecurs(cRow,cCol);
-        }
-        */
         get_cursor_pos(&cRow,&cCol);
-        //logLine("end of loop");
 
     }
 

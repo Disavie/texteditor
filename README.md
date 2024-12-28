@@ -30,6 +30,14 @@ there is also weirdness with rightside horizontal scrolling <br />
 
 horizontal scrolling is 100% working now <br />
 afaik the line snapping is working perfectly too <br />
+added easy logging functionality too <br />
+
+
+added deleting and creating new lines, still need to implement the cursor moving to the correct place though <br />
+scrolling works perfectly <br />
+more color support on the window being draw <br />
+need to add command line and make it modal now <br />
+
 
 
 .
