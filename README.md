@@ -1,6 +1,18 @@
 shitty terminal based text editor using basically only ansi escape sequences to move the cursor  <br />
 and do that stuff  <br />
 
+planned features: <br />
+
+--add modal mode <br />
+--mimic common vim motions (ex hjkl wW bB hjkl dd i oO <ESC> f) <br />
+--add status bar displaying some info like current file and line count <br />
+--add command bar for VERY basic vim commands (ex w wq q e) <br />
+--add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
+
+
+
+
+
 commit #1 <br />
 FIX THE ERROR OF TWO KEY PRESSES AT ONCE, look up "cannonical terminal input mode"  <br />
 first commit is with 1 buffer for entire file with in-out range <br />
