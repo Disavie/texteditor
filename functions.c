@@ -590,18 +590,18 @@ int smart_moveup(int cRow,int *yStart){
 }
 
 int smart_movedown(int cRow, int *yStart,int flag, int linecount, int rend_HEIGHT){
-    /*
     logLine("-in smart_movedown-");
     logLine("\ncRow = ");logNum(cRow);
     logLine("\n*yStart = ");logNum(*yStart);
     logLine("\nlinecount = ");logNum(linecount);
     logLine("\nrend_HEIGHT = ");logNum(rend_HEIGHT);
-    */ 
     if(*yStart+cRow <= linecount){
-        if(cRow == rend_HEIGHT && (flag || *yStart+cRow != linecount)){ 
+        if(cRow >= rend_HEIGHT && (flag || *yStart+cRow != linecount)){ 
+            logLine("scrolling down!!!!");
             (*yStart)++;   
             return 1;
         }else{
+            logLine("moving down!   ");
             movedown();
         }
     }

@@ -205,6 +205,7 @@ int main(int argc, char ** argv){
                     //Insert line
                     char * t = insert_line(&f_buf,newl,line_index+1,&linecount);
                 }else{
+                    logLine("inserting blank new line");
                     char * t = insert_line(&f_buf,"\0",line_index+1,&linecount);
                 }
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
