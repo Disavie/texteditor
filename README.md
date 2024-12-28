@@ -38,6 +38,7 @@ scrolling works perfectly <br />
 more color support on the window being draw <br />
 need to add command line and make it modal now <br />
 
-
+12/27/2024 <br />
+bug fix creating newline if cursor at rend_HEIGHT wouldnt work <br />
 
 .
