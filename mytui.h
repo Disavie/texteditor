@@ -72,11 +72,14 @@ void copy_2d_arr(int HEIGHT, int WIDTH, int orig_height,char dest[HEIGHT][WIDTH]
 //moves cursor to the left until it is on a char
 //returns 1 if it works or 0 if fail (fail case is if the thing it needs to snap to is not rendered)
 int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, int yOffset, int xOffset); 
+void snapCursor(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset);
 
 void flush_stdin();
 
 char * insert_to_line(char ** buf, char * line, int buf_row, int index_in_line,char ch); 
 char * remove_from_line(char ** buf, char * line, int buf_row, int index);
+char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) ;
+char * remove_line(char ** buf, int buf_row);
 
 //will either scroll or move the cursor,, return value is a flag 1 = scroll 0 = moved in x direction
 

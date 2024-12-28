@@ -99,7 +99,7 @@ int main(int argc, char ** argv){
 
         //logLine("\ncRow = "); logNum(cRow);
         //logLine("\ncCol = "); logNum(cCol);
-        //clearLog();
+        clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col - xOffset;
         HEIGHT = w.ws_row;
@@ -142,17 +142,51 @@ int main(int argc, char ** argv){
             short ascii_ch = (short)ch;
           //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol == xOffset && xStart == 0){ //CASE OF DELETING BLANK LINE
+                if(cCol == xOffset && xStart == 0){ //CASE OF DELETING LINE
 
 
                 }else{
 
-                    char * line = remove_from_line(f_buf,f_buf[yStart+cRow-2],yStart+cRow-2,xStart+cCol-3);
+                    char * line = remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-xOffset,xStart+cCol-xOffset-1);
                     smart_moveleft(cCol,&xStart);
                 }
             }else if(ascii_ch == 10){ // '\n'
-                movedown();
-                //DO OTHER STUFF TO ALLOCATE NEWLIEN TO FULL_BUFFER
+
+
+                logLine("\\n case___________________");
+                size_t copy_start = xStart+cCol-xOffset;
+                size_t line_index = yStart+cRow-yOffset;
+                char * line = f_buf[line_index];
+                size_t line_len = strlen(line);
+                if(line_len > 0){
+
+                    //Copy the section of line
+                    char * copied_line = line+copy_start;
+                    char newl[strlen(copied_line)+1];
+                    strcpy(newl,copied_line);
+                    newl[strlen(copied_line)+1] = '\0';
+                    logLine(newl);
+
+                    //Reduce size of old line
+                    char * shortened_line = (char *)realloc(line,(copy_start)*sizeof(char)); 
+                    if(shortened_line != NULL){
+                        strcpy(shortened_line,line);
+                        shortened_line[copy_start] = '\0';
+                    }else{
+                        shortened_line = "\0";
+                    }
+                    f_buf[line_index] = shortened_line;
+                    logLine(shortened_line);
+                    logLine(newl);
+
+                    //Insert line
+                    movedown();
+                    char * t = insert_line(&f_buf,newl,line_index+1,&szHelper);
+                }else{
+                    char * t = insert_line(&f_buf,"\0",line_index+1,&szHelper);
+                }
+                logLine(f_buf[0]);
+                logLine("done!");
             }else{
            //     logLine("\nyStart =");logNum(yStart);
             //    logLine("\ncRow = ");logNum(cRow);
@@ -179,7 +213,9 @@ int main(int argc, char ** argv){
         if(update_made){ 
             // this does work but its chatgpt generated
             //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
+            logLine("updating buffer!");
             longestline = countLongestLineBuffer(f_buf,szHelper);
+            logLine("checked longestline");
             create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
             movecurs(cRow,cCol);
             update_made = 0;
@@ -211,7 +247,7 @@ int main(int argc, char ** argv){
     //saving the file
     f = fopen(argv[1],"w");
     if (f == NULL) printf("error opening file: %s\n",argv[1]);
-    for(int i = 0 ; i < linecount ; i++){
+    for(int i = 0 ; i < szHelper; i++){
         fprintf(f,"%s\n",f_buf[i]);
     }
     fclose(f);

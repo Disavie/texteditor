@@ -442,6 +442,36 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, i
     return status;
 }
 
+char *insert_line(char ***buf, char *line, int buf_row, size_t *buf_height) {
+    // Validate input parameters
+    if (buf == NULL || *buf == NULL || line == NULL || buf_row < 0 || buf_row > *buf_height) {
+        return "Invalid arguments";
+    }
+
+    // Reallocate the buffer to accommodate one more line
+    char **new_buf = realloc(*buf, (*buf_height + 1) * sizeof(char *));
+    if (new_buf == NULL) {
+        return "Memory allocation failed";
+    }
+    *buf = new_buf;
+
+    // Shift lines down from buf_row to make room for the new line
+    for (int i = *buf_height; i > buf_row; i--) {
+        (*buf)[i] = (*buf)[i - 1];
+    }
+
+    // Allocate memory for the new line and copy it
+    (*buf)[buf_row] = malloc(strlen(line) + 1);
+    if ((*buf)[buf_row] == NULL) {
+        return "Memory allocation failed";
+    }
+    strcpy((*buf)[buf_row], line);
+
+    // Update the buffer height
+    (*buf_height)++;
+
+    return NULL;  // Return NULL to indicate success
+}
 
 char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
 
