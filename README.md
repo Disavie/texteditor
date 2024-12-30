@@ -67,6 +67,9 @@ hit <ESC> to switch from Insert to Normal mode <br />
 typing ./editor without a filename will now open a default blank buffer with a greeting message <br />
 moving cursor now wraps lines <br />
 
+commit #11 <br />
+added baby statusbar and better color support <br />
+added saveas command <br />
 
 .
 
