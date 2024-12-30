@@ -562,7 +562,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]){
 
     // Define the ASCII art lines
     const char *art[] = {
-        "                       Phi 0.0.10",
+        "                       Phi 0.0.11",
         "                Open Source Text Editor",
         "                                  ,",
         "                 ,g@@@@MT    g@@@@@@@@@@g",
