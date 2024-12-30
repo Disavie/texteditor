@@ -29,9 +29,14 @@ int main(int argc, char ** argv){
 
     if(argc > 1){
         strcpy(filename,argv[1]);
+        f = fopen(filename,"a");
+        fclose(f);
 
         f = fopen(filename,"r");
         linecount = countLines(f);
+        if(linecount == 0){
+          goto makenew;
+        }
         longestline  = countLongestLine(f);
         fclose(f);
 
@@ -59,12 +64,13 @@ int main(int argc, char ** argv){
         fclose(f);
 
     }else{
+        strcpy(filename,"none");
+        makenew:
         linecount = 1;
         longestline = 0;
         szHelper = HEIGHT;
         char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
         f_buf = new_f_buf;
-        strcpy(filename,"none");
     }
 
     //if file is shorter than the terminal height then fill with blank lines
@@ -86,7 +92,9 @@ int main(int argc, char ** argv){
     int yCorner = 0;
     int yOffset = 2 + yCorner;
     int xOffset = 7 + xCorner;
+    int hasSaved = 1;
     short statusBarHeight = 1;
+    char statusBarMsg[128] = "";
     short rend_HEIGHT = HEIGHT - yOffset-yCorner - statusBarHeight;
     short rend_WIDTH = WIDTH - xOffset;
     int cRow = yOffset;
@@ -162,34 +170,14 @@ int main(int argc, char ** argv){
                 break;
             }
             goto movement;
-          }else if(ch == 'q'){
-            break;
           }else if(ch == 'd'){
             if(linecount == 1) continue;
             char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
             if(yStart+cRow-yOffset == linecount) smart_moveup(cRow,&yStart,yOffset);
             update_made = 1;
           }else if(ch == 'w'){
-
-            while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] != ' '){
-              logLine("\n");
-              logNum(cCol);
-              logNum(xOffset);
-              logNum(rend_WIDTH);
-              logLine("\n");
-              if(cCol-xOffset == rend_WIDTH-1){
-                xStart++;
-                update_made = 1;
-              }else{
-                cCol++;
-              }
-              
-              if(cCol+xStart-xOffset >= strlen(f_buf[yStart+cRow-yOffset])) break;
-            }
-
-            movecurs(cRow,cCol);
-            smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-
+            if(mimic_vim_w(&f_buf, &yStart, &xStart,&cRow, &cCol, yOffset, xOffset,rend_WIDTH))
+              update_made = 1;
           }else if(ch == 'b'){
             if(xStart+cCol-xOffset == 0)continue;
 
@@ -203,7 +191,6 @@ int main(int argc, char ** argv){
               
             }
 
-            int loops = 0;
             while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] != ' '){
               if(cCol == xOffset && xStart != 0){
                 xStart--;
@@ -213,7 +200,6 @@ int main(int argc, char ** argv){
               }
 
               if(cCol+xStart-xOffset == 0) {  break; };
-              loops++;
             }
             movecurs(cRow,cCol);
             if(cCol+xStart-xOffset != 0)
@@ -243,7 +229,36 @@ int main(int argc, char ** argv){
               movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
             }   
             size_t cmd_length = strlen(cmdbuf);
-            if(strncmp(cmdbuf,":saveas ",7) == 0){
+            trim_trailing_spaces(cmdbuf);
+
+            if(strcmp(cmdbuf,":w") == 0){
+              if(strcmp(filename,"none") == 0){
+                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+              }else{
+                saveFile(filename,linecount,&f_buf);
+                hasSaved = 1;
+              }
+            } else if(strcmp(cmdbuf,":wq") == 0){
+              if(strcmp(filename,"none") != 0){
+                saveFile(filename,linecount,&f_buf);
+                break;
+              }else{
+                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+              }
+
+            }else if(strcmp(cmdbuf, ":q")==0){
+
+              if(hasSaved && strcmp(filename,"none") != 0){
+                break;
+              }else if(!hasSaved){
+                strcpy(statusBarMsg,"No change since last write, try q!");
+              }else{
+                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+              }
+            }else if(strcmp(cmdbuf,":q!")==0){
+              break;
+            }   
+            else if(strncmp(cmdbuf,":saveas ",7) == 0){
               char * newname = cmdbuf+8;
               strcpy(filename,newname); 
             }
@@ -395,6 +410,7 @@ int main(int argc, char ** argv){
             }
             logLine("update_made = 1");
             update_made = 1;
+            hasSaved = 0;
         }
         
         end_frame:
@@ -407,8 +423,8 @@ int main(int argc, char ** argv){
         }
 
 
-        update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
-
+        update_statusbad(statusBarMsg,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
+        strcpy(statusBarMsg,"");
         memset(input_buffer,'\0',sizeof(input_buffer));
         snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
         get_cursor_pos(&cRow,&cCol);
@@ -416,16 +432,6 @@ int main(int argc, char ** argv){
 
     }
 
-    //saving the file
-    f = fopen(filename,"w");
-    if (f == NULL){
-        logLine("No filename");
-    }else{
-        for(int i = 0 ; i < linecount; i++){
-            fprintf(f,"%s\n",f_buf[i]);
-        }
-        fclose(f);
-    }
     //restore cursor
     resetColor();
     restore_input_mode(&oldtermios);

@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <ctype.h>
 
 
 
@@ -86,6 +87,13 @@ void drawLogo(int HEIGHT,int WIDTH, short color[]);
 
 
 char updateMode(char inputch, char *mode);
+int saveFile(char * filename,size_t linecount,char *** f_buf);
+void trim_trailing_spaces(char *str);
+
+//VIMLIKE MOTIONS
+
+int mimic_vim_w(char *** f_buf, int * yStart, int * xStart,int * cRow, int *cCol, int yOffset, int xOffset, int rend_WIDTH);
+
 
 
 #endif

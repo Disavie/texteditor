@@ -562,7 +562,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]){
 
     // Define the ASCII art lines
     const char *art[] = {
-        "                       Phi 0.0.11",
+        "                       Phi 0.0.12",
         "                Open Source Text Editor",
         "                                  ,",
         "                 ,g@@@@MT    g@@@@@@@@@@g",
@@ -669,5 +669,56 @@ void update_statusbad(char * words,int widith, int height, char ** modes, char m
       movecurs(cRow,cCol);
       showcursor();
 
+}
+
+int saveFile(char * filename,size_t linecount, char *** f_buf){
+    
+    FILE * f;
+
+    f = fopen(filename,"w");
+    if (f == NULL){
+      return 1;
+    }else{
+        for(int i = 0 ; i < linecount; i++){
+            fprintf(f,"%s\n",(*f_buf)[i]);
+        }
+        fclose(f);
+    }
+    return 0;
+
 
 }
+
+
+void trim_trailing_spaces(char *str) {
+    int len = strlen(str);
+    while (len > 0 && isspace(str[len - 1])) {
+        str[len - 1] = '\0';  // Null-terminate to remove trailing spaces
+        len--;
+    }
+}
+
+
+
+
+
+
+int mimic_vim_w(char *** f_buf, int * yStart, int * xStart,int * cRow, int *cCol, int yOffset, int xOffset, int rend_WIDTH){
+    int updated = 0;
+            while((*f_buf)[(*yStart)+(*cRow)-yOffset][(*xStart)+(*cCol)-xOffset] != ' '){
+              if((*cCol)-xOffset == rend_WIDTH-1){
+                (*xStart)++;
+                updated = 1;
+              }else{
+                (*cCol)++;
+              }
+              if((*cCol)+(*xStart)-xOffset >= strlen((*f_buf)[(*yStart)+(*cRow)-yOffset])) break;
+            }
+            movecurs(*cRow,*cCol);
+            smart_moveright2(*cCol, xStart, xOffset,strlen((*f_buf)[(*cRow)+(*yStart)-yOffset]),rend_WIDTH);
+
+    return updated;
+}
+
+
+

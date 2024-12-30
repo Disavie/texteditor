@@ -71,5 +71,9 @@ commit #11 <br />
 added baby statusbar and better color support <br />
 added saveas command <br />
 
+commit #12 <br />
+added w q q! wq commands <br />
+added better status bar support <br />
+can finally create a new file by typing ./editor [new filename] and it will create a blank file <br />
 .
 
