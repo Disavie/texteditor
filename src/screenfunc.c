@@ -19,7 +19,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
 
     // Define the ASCII art lines
     const char *art[] = {
-        "                         Zep v0.0.12",
+        "                         Zep v0.0.13",
         "               Open source, ANSI-code text editor",
         "",
         "                     @@PMTTTTTTTT]@@@@M",
