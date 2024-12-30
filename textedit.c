@@ -18,44 +18,54 @@ int main(int argc, char ** argv){
     short HEIGHT = w.ws_row;
 
     char ch; 
+    size_t linecount;
+    size_t longestline;
+    size_t szHelper;
+    char ** f_buf;
+    char filename[32]; //<- length of filename
     FILE * f;
-    char filename[strlen(argv[1])];
-    strcpy(filename,argv[1]);
-
-    f = fopen(argv[1],"r");
-    size_t linecount = countLines(f);
-    size_t longestline  = countLongestLine(f);
-
-    printf("longestline in the file %s is %lu letters\n",argv[1],longestline);
-    printf("file %s is %lu lines\n",argv[1],linecount);
-    fclose(f);
-
-    size_t szHelper = linecount; 
-    if(linecount < HEIGHT){
-        szHelper = HEIGHT;
-    }
-    char ** f_buf = (char **)malloc(szHelper*sizeof(char *));
-
-    /*
-    printf("got here\n");
-    printf("height = %d, width = %d, \n",HEIGHT,WIDTH);
-    sleep(2);
-    */
-    char * ptr_longestline;
-    f = fopen(argv[1],"r");    
     int i = 0;
-    while(!feof(f) && i < linecount){
-        char line[512];
-        fgets(line,sizeof(line),f);
-        size_t len = strlen(line);
-        f_buf[i] = (char *)malloc((len+1)*sizeof(char));
-        strcpy(f_buf[i],line);
-        if(f_buf[i][len-1] == '\n')
-            f_buf[i][len-1] = '\0';
-        if(len == longestline)
-            ptr_longestline = f_buf[i];
-        i++;
+
+
+    if(argc > 1){
+        strcpy(filename,argv[1]);
+
+        f = fopen(filename,"r");
+        linecount = countLines(f);
+        longestline  = countLongestLine(f);
+        fclose(f);
+
+        szHelper = linecount; 
+        if(linecount < HEIGHT){
+            szHelper = HEIGHT;
+        }
+        char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
+        f_buf = new_f_buf;
+
+        f = fopen(argv[1],"r");    
+        i = 0;
+        while(!feof(f) && i < linecount){
+            char line[512];
+            fgets(line,sizeof(line),f);
+            size_t len = strlen(line);
+            f_buf[i] = (char *)malloc((len+1)*sizeof(char));
+            strcpy(f_buf[i],line);
+            if(f_buf[i][len-1] == '\n')
+                f_buf[i][len-1] = '\0';
+            logLine("read :");logLine(f_buf[i]);
+            i++;
+        }
+        logLine("read them all");
+        fclose(f);
+
+    }else{
+        linecount = 1;
+        longestline = 0;
+        szHelper = HEIGHT;
+        char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
+        f_buf = new_f_buf;
     }
+
     //if file is shorter than the terminal height then fill with blank lines
     if(linecount < HEIGHT){
         while(i < szHelper){
@@ -64,9 +74,6 @@ int main(int argc, char ** argv){
             i++;
         }
     }
-
-    fclose(f);
-    printf("exited the file successfully\n");
 
 
     if(szHelper < HEIGHT){
@@ -84,8 +91,10 @@ int main(int argc, char ** argv){
     int hasQuit = 0;
     short update_made = 1;
     ch = '\0';
+    char mode = 'n'; 
 
     create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
+    if(argc == 1){ movecurs((int)(cRow+linecount),cCol); drawLogo(rend_HEIGHT,rend_WIDTH); }
     movecurs(cRow,cCol);
 
     char input_buffer[8];
@@ -93,12 +102,7 @@ int main(int argc, char ** argv){
 
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
         
-
-        //logLine("-----------New loop");
-             
-
-        //logLine("\ncRow = "); logNum(cRow);
-        //logLine("\ncCol = "); logNum(cCol);
+        hidecursor();
         clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col;
@@ -107,57 +111,161 @@ int main(int argc, char ** argv){
         rend_WIDTH = WIDTH - xOffset ;
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
-        /*
         for(int i = 0 ; i < 8 ; i++){
-            logChar(input_buffer[i]);
+          logChar(input_buffer[i]);
         }
-        */
 
 
-
-        if (ch == 'q'){
-            break;
-        }else if (ch == '\033' && input_buffer[1] == '['){
-            switch (input_buffer[2]){
-                case 'A':
-                    if(smart_moveup(cRow,&yStart,yOffset))
-                        update_made = 1;
-                    break;
-                case 'B':
-                    if(smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT))
-                        update_made = 1;
-                    break;
-                case 'C':
-                    if(smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH))
-                        update_made = 1;
-                    break;
-                case 'D':
-                    if(smart_moveleft(cCol,&xStart,xOffset))
-                        update_made = 1;
-                    break;
-                default:
-                    printf("unknown escape sequence: \\033[%c\n",ch);
+        if(updateMode(ch,&mode)) continue; 
+        
+        if(mode == 'n'){
+          if(ch == 'h' || ch == 'j' || ch == 'k' || ch == 'l'){
+            switch(ch){
+              case 'h':
+                input_buffer[2] = 'D';
+                break;
+              case 'j':
+                input_buffer[2] = 'B';
+                break;
+              case 'k':
+                input_buffer[2] = 'A';
+                break;
+              case 'l':
+                input_buffer[2] = 'C';
+                break;
             }
-        }else{
-         //   logLine("I am in the default else");
+            goto movement;
+          }else if(ch == 'q'){
+            break;
+          }else if(ch == 'd'){
+            if(linecount == 1) continue;
+            char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
+            if(yStart+cRow-yOffset == linecount) smart_moveup(cRow,&yStart,yOffset);
+            update_made = 1;
+          }else if(ch == 'w'){
+
+            while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] != ' '){
+              logLine("\n");
+              logNum(cCol);
+              logNum(xOffset);
+              logNum(rend_WIDTH);
+              logLine("\n");
+              if(cCol-xOffset == rend_WIDTH-1){
+                xStart++;
+                update_made = 1;
+              }else{
+                cCol++;
+              }
+              
+              if(cCol+xStart-xOffset >= strlen(f_buf[yStart+cRow-yOffset])) break;
+            }
+
+            movecurs(cRow,cCol);
+            smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+
+          }else if(ch == 'b'){
+            if(xStart+cCol-xOffset == 0)continue;
+
+            if(cCol == xOffset) {xStart--;}
+            else {cCol--;}
+        
+            if(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] == ' '){
+
+              if(cCol == xOffset) {xStart--;}
+              else {cCol--;}
+              
+            }
+
+            int loops = 0;
+            while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] != ' '){
+              if(cCol == xOffset && xStart != 0){
+                xStart--;
+                logLine("adjusting screen\n");
+                update_made = 1;
+              }else{
+                logLine("decremening\n");
+                cCol--;
+              }
+
+              if(cCol+xStart-xOffset == 0) {  break; };
+              loops++;
+            }
+            movecurs(cRow,cCol);
+            if(cCol+xStart-xOffset != 0)
+              smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+          }
+        }
+
+        if (ch == '\033'){
+            if(input_buffer[1] == '['){
+              movement:
+              switch (input_buffer[2]){
+                  case 'A':
+                      if(smart_moveup(cRow,&yStart,yOffset))
+                          update_made = 1;
+                      break;
+                  case 'B':
+                      if(smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT))
+                          update_made = 1;
+                      break;
+
+                  case 'C':
+                      switch(smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH)){
+
+                        case 0:
+                          break;
+                        case 2:
+                          if(yStart+cRow-yOffset != linecount-1){
+                            smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT);
+                            get_cursor_pos(&cRow,&cCol);
+                            create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount);
+                            movecurs(cRow,xOffset);
+                        }
+                        default:
+                          update_made = 1;
+                      }
+                      break;
+
+                  case 'D':
+                      switch (smart_moveleft(cCol,&xStart,xOffset)){
+                          case 0:
+                              break;
+                          case 2:
+                              if(yStart+cRow-yOffset != 0){
+                                smart_moveup(cRow,&yStart,yOffset);
+                                get_cursor_pos(&cRow,&cCol);
+                                snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+                                smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                                get_cursor_pos(&cRow,&cCol);
+                              }
+                          default:
+                            update_made = 1;
+                      }
+
+                      break;
+                  default:
+                    logLine("idunno what escape sequence this shit is\n");
+              }
+            }else{
+              if(input_buffer[1] == '\0'){ //case of hitting ESC
+                mode = 'n'; 
+              }else;
+            }
+            goto end_frame;
+        }
+
+        if(mode == 'i'){
+
             short ascii_ch = (short)ch;
-          //  logLine("ASCII converted");
             if(ascii_ch == 127){ //ascii 127 is backspace
-                if(cCol == xOffset && xStart == 0 && yStart+cRow-yOffset != 0){ //CASE OF DELETING LINE
-                    logLine("in backspace");
+                if(xStart+cCol-xOffset == 0 && yStart+cRow-yOffset != 0){ //CASE OF DELETING LINE
 
                     char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
                     smart_moveup(cRow,&yStart,yOffset);
                     get_cursor_pos(&cRow,&cCol);
-                    snap_right(f_buf[yStart+cRow-yOffset],cRow,xOffset);
-                    //snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
-                    if(removed_line == NULL){
-                        logLine("NULL");
-                    }else if(removed_line[0] == '\n'){
-                        logLine("newline");
-                    }else if(removed_line[0] == '\0'){
-                        logLine("nullchar");
-                    }else logLine(removed_line);    
+
+                    snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+                    get_cursor_pos(&cRow,&cCol);
 
 
                     if(removed_line[0] != '\0'){
@@ -174,6 +282,7 @@ int main(int argc, char ** argv){
                     }else ;
                     logLine("done removing");
                 }else{
+                    if(xStart+cCol-xOffset == 0 && yStart+cRow-yOffset == 0) continue;
                     logLine("_____REMOVEFROMLINE_____");
                     char * line = f_buf[yStart+cRow-yOffset];
                     char * ret = remove_from_line(f_buf,line,yStart+cRow-yOffset,xStart+cCol-xOffset-1);
@@ -201,7 +310,8 @@ int main(int argc, char ** argv){
                         strcpy(shortened_line,line);
                         shortened_line[copy_start] = '\0';
                     }else{
-                        shortened_line = "\0";
+                        shortened_line = (char *)malloc(1*sizeof(char));
+                        shortened_line[0] = '\0';
                     }
 
                     f_buf[line_index] = shortened_line;
@@ -215,55 +325,48 @@ int main(int argc, char ** argv){
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
                 create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount);
-                //snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
                 movecurs(cRow,xOffset);
             }else{
 
                 char * line= insert_to_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset, xStart+cCol-xOffset, ch);
                 longestline = countLongestLineBuffer(f_buf,linecount);
-                //smart_moveright(cCol,&xStart,longestline,WIDTH);
                 smart_moveright2(cCol, &xStart, xOffset, strlen(line), rend_WIDTH);
 
             }
             logLine("update_made = 1");
             update_made = 1;
         }
+        
+        end_frame:
         get_cursor_pos(&cRow,&cCol);
-
         if(update_made){ 
-            // this does work but its chatgpt generated
-            //noflicker_create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,yStart,xStart);
             longestline = countLongestLineBuffer(f_buf,linecount);
-            logLine("longestline =");logNum(longestline);
             create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
-            logLine("window updated");
             movecurs(cRow,cCol);
             update_made = 0;
         }
+
         memset(input_buffer,'\0',sizeof(input_buffer));
         snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
         get_cursor_pos(&cRow,&cCol);
+        showcursor();
 
     }
-
-    if(bytes_read == -1){
-        logLine("error from read()");
-        perror("read");
-   }
-
 
     //saving the file
-    f = fopen(argv[1],"w");
-    if (f == NULL) printf("error opening file: %s\n",argv[1]);
-    for(int i = 0 ; i < linecount; i++){
-        fprintf(f,"%s\n",f_buf[i]);
+    f = fopen(filename,"w");
+    if (f == NULL){
+        logLine("No filename");
+    }else{
+        for(int i = 0 ; i < linecount; i++){
+            fprintf(f,"%s\n",f_buf[i]);
+        }
+        fclose(f);
     }
-    fclose(f);
     //restore cursor
     resetColor();
-    clear_screen();
-    move00();
     restore_input_mode(&oldtermios);
     closeAltBuffer();
+    showcursor();
     return 0;
 }

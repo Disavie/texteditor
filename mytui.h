@@ -75,6 +75,8 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, s
 int snap_right(char * line, int cRow, short xOffset);
 void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount);
 
+void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* xStart, int yOffset, int xOffset, int rend_HEIGHT, int rend_WIDTH, size_t linecount);
+
 void flush_stdin();
 
 char * insert_to_line(char ** buf, char * line, int buf_row, int index_in_line,char ch); 
@@ -87,8 +89,15 @@ char * remove_line(char *** buf, int buf_row, size_t *buf_height);
 int smart_moveup(int cRow,int *yStart,short yOffset);
 int smart_movedown(int cRow, int *yStart,  int flag,int linecount, int rend_HEIGHT);
 int smart_moveleft(int cCol, int *xStart, short xOffset);
-int smart_moveright(int cCol, int *xStart, int longestline, int WIDHT);
 int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH);
+
+
+void drawLogo(int HEIGHT,int WIDTH);
+
+
+char updateMode(char inputch, char *mode);
+
+
 #endif
 
 

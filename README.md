@@ -1,17 +1,13 @@
-shitty terminal based text editor using basically only ansi escape sequences to move the cursor  <br />
-and do that stuff  <br />
+shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
 
 planned features: <br />
 
 --add modal mode <br />
---mimic common vim motions (ex hjkl wW bB hjkl dd i oO <ESC> f) <br />
 --add status bar displaying some info like current file and line count <br />
 --add command bar for VERY basic vim commands (ex w wq q e) <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
-
-
-
-
+--add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
+--this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
 
 commit #1 <br />
 FIX THE ERROR OF TWO KEY PRESSES AT ONCE, look up "cannonical terminal input mode"  <br />
@@ -37,9 +33,9 @@ now can scroll horizontally <br />
 
 commit #5 <br />
 NOW IS PROPERLY SPAM PROOF <br />
-there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br /> 
+there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br />
 color support <br />
-there is also weirdness with rightside horizontal scrolling <br />
+there is also weirdness with rightside horizontal scrolling <br />--mimic common vim motions (ex hjkl wW bB hjkl dd i oO <ESC> f) <br />
 
 commit #6 <br />
 horizontal scrolling is 100% working now <br />
@@ -61,6 +57,16 @@ fixed a bug with scrolling <br />
 now shows line numbers and ~ for empty lines <br />
 going on plane so in case i fuck anything up i have a good backup <br />
 need to fix delete \n cursor movement <br />
+RIGHTSIDE SCROLLING OCCURS TOO EARLY <br />
+
+commit #10 <br />
+i think all of the general cusor movement is basically completed <br />
+added some basic modal stuff for Normal and Insert <br />
+added hjkl q d w b in normal mode <br />
+hit <ESC> to switch from Insert to Normal mode <br />
+typing ./editor without a filename will now open a default blank buffer with a greeting message <br />
+moving cursor now wraps lines <br />
 
 
 .
+

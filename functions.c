@@ -3,170 +3,6 @@
 #include "mytui.h"
 #include <termios.h>
 
-void create_window(int startx, int starty, int HEIGHT,int WIDTH, char args[HEIGHT][WIDTH]){
-    const char DEF = ' ';
-    setlocale(LC_CTYPE,"");
-    //BORDERS
-    wchar_t BLOCK= 0x2588;
-    wchar_t LEFTBORD = 0x2595;
-    wchar_t RIGHTBORD = 0x258F;
-    wchar_t BOTTOMBORD = 0x2581;
-    wchar_t TOPBORD  = 0x2594;
-    
-    printf("\033[2J\033[H");
-
-    //setting the starty;
-    int y = 0;
-    while(y < starty){
-        printf("%d\n",y);
-        y++;
-    }
-    int x = 0;
-    char letter;
-    for(int i = -1 ; i < HEIGHT +1 ; i ++){
-        while(x < startx){
-            printf(" ");
-            x++;
-        }
-        printf("%lc",LEFTBORD);
-        for(int j = 0; j < WIDTH ; j++){
-            if( i == -1){
-                printf("%lc",TOPBORD);
-            }else if ( i == HEIGHT ){
-                printf("%lc",BOTTOMBORD);
-            }else{
-                letter = args[i][j];
-                if (letter == '\0'){
-                    printf("\\");
-                }else{
-                    printf("%c",letter);
-                }
-            }
-        }
-        x = 0;
-        printf("%lc\n",RIGHTBORD);
-    }
-}
-
-void draw_borders(int startx, int starty, int win_height, int win_width){
-
-    setlocale(LC_CTYPE,"");
-    //BORDERS
-    const char DEF = ' ';
-    wchar_t BLOCK= 0x2588;
-    wchar_t LEFTBORD = 0x2595;
-    wchar_t RIGHTBORD = 0x258F;
-    wchar_t BOTTOMBORD = 0x2581;
-    wchar_t TOPBORD  = 0x2594;
-    
-    clear_screen();
-    move00();
-    hidecursor();
-    //setting the starty;
-    int y = 0;
-    while(y < starty){
-        printf("%d\n",y);
-        y++;
-    }
-    int x = 0;
-    char letter;
-    for(int i = -1 ; i < win_height+1 ; i++){
-        while(x < startx){
-            printf(" ");
-            x++;
-        }
-        printf("%lc",LEFTBORD);
-
-        for(int j = 0; j < win_width; j++){
-            if( i == -1){
-                printf("%lc",TOPBORD);
-            }else if ( i == win_height){
-                printf("%lc",BOTTOMBORD);
-            }else{
-                printf("\033[2;39m%c\033[0m",DEF);
-            }
-        }
-        x = 0;
-        printf("%lc\n",RIGHTBORD);
-    }
-    showcursor();
-}
-    
-
-void noflicker_create_window_inoutRANGE(int startx, int starty, int win_height, int max_width, char **args, int yIn, int xIn) {
-    setlocale(LC_CTYPE, "");
-    // BORDERS
-    const char DEF = ' ';
-    wchar_t BLOCK = 0x2588;
-    wchar_t LEFTBORD = 0x2595;
-    wchar_t RIGHTBORD = 0x258F;
-    wchar_t BOTTOMBORD = 0x2581;
-    wchar_t TOPBORD = 0x2594;
-
-    // Estimate buffer size
-    size_t buffer_size = 1024 * 1024; // 1 MB buffer, adjust as needed
-    char *output_buffer = malloc(buffer_size);
-    if (!output_buffer) {
-        perror("Failed to allocate buffer");
-        exit(1);
-    }
-
-    // Pointer to track the current position in the buffer
-    char *buffer_ptr = output_buffer;
-
-    // Clear screen, move cursor to 0,0 and hide cursor
-    snprintf(buffer_ptr, buffer_size, "\033[H\033[?25l");
-    buffer_ptr += strlen(buffer_ptr);
-
-    int y = 0;
-    // Setting the starty
-    while (y < starty) {
-        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%d\n", y);
-        y++;
-    }
-
-    int x = 0;
-    for (int i = yIn - 1; i < yIn + win_height + 1; i++) {
-        while (x < startx) {
-            buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), " ");
-            x++;
-        }
-
-        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", LEFTBORD);
-        size_t len = 0;
-
-        if (i >= 0 && i < yIn + win_height) {
-            len = strlen(args[i]);
-        }
-
-        for (int j = xIn; j < xIn + max_width; j++) {
-            if (i == yIn - 1) {
-                buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", TOPBORD);
-            } else if (i == yIn + win_height) {
-                buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc", BOTTOMBORD);
-            } else {
-                if (j < len) {
-                    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%c", args[i][j]);
-                } else {
-                    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "\033[2;39m%c\033[0m", DEF);
-                }
-            }
-        }
-
-        x = 0;
-        buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "%lc\n", RIGHTBORD);
-    }
-
-    // Show cursor again
-    buffer_ptr += snprintf(buffer_ptr, buffer_size - (buffer_ptr - output_buffer), "\033[?25h");
-
-    // Write the entire buffer to stdout at once
-    fwrite(output_buffer, 1, buffer_ptr - output_buffer, stdout);
-
-    // Free the buffer
-    free(output_buffer);
-}
-
 
 void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn,size_t linecount){ 
 
@@ -185,7 +21,7 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     short text_color = 230;
     short bg_file_color = 236;
     short bg_unused_color = 235; 
-    short comment_color = 144;
+    short comment_color = 242;
     
     move00();
     hidecursor();
@@ -465,15 +301,7 @@ void flush_stdin(){
 
 int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, short yOffset,short xOffset){
 
-    logLine("\nIN SNAP LEFT ------------");
-    //current line is buffer[cursRow]
-    logLine("\nxIn = "); logNum(*xIn);
-    logLine("\nyIn = "); logNum(*yIn);
-    logLine("\ncCol = "); logNum(*cursCol);
-    logLine("\ncRow = "); logNum(*cursRow);
-    logLine("looking at line:");logLine(buffer[(*cursRow)+(*yIn)-yOffset]);
     size_t line_len = strlen(buffer[(*cursRow)+(*yIn)-yOffset]);
-    logLine("\nline_len = ");logNum(line_len);
 
     int status = 1;
     if(line_len < (*cursCol)+(*xIn)-xOffset){
@@ -484,25 +312,36 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, s
         }
     }
 
-    logLine("\nstatus = "); logNum(status);
     get_cursor_pos(cursRow,cursCol);
 
     //logLine("\nMOVED TO:");
     return status;
 }
 
+void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* xStart, int yOffset, int xOffset, int rend_HEIGHT, int rend_WIDTH, size_t linecount){
 
-int snap_right(char * line, int cRow, short xOffset){
 
+    char * line = f_buf[*cRow+(*yStart)-yOffset];
     size_t len = strlen(line);
-    movecurs(cRow,(int)(len+xOffset));
-    return 1;
+    logLine("\nlen = ");logNum(len);
+    logLine("\nrend_WIDTH = ");logNum(rend_WIDTH);
+    int moveFlag = 0;
+    if(len < rend_WIDTH){
+        *xStart = 0;
+        size_t len = strlen(line);
+    }else{
+        *xStart = len-rend_WIDTH+1;
+        moveFlag = 1;
+   }
+    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,*yStart,*xStart,linecount);
+    if(moveFlag){ movecurs(*cRow,rend_WIDTH+xOffset-1);}
+    else {movecurs(*cRow,(int)(len+xOffset));}
+
 }
 
 
 
 void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
-        logLine("linecount = ");logNum(linecount);
         if(!snap_left(f_buf, cRow,cCol,yStart,xStart,yOffset,xOffset)){
             get_cursor_pos(cRow,cCol);
             size_t len = strlen(f_buf[(*cRow)+(*yStart)-yOffset]);
@@ -642,27 +481,13 @@ int smart_moveleft(int cCol,int * xStart,short xOffset){
 
     if(cCol > xOffset){
         moveleft(); 
+        return 0;
     }else if(*xStart!= 0){
         (*xStart)--;
         return 1;
     }
-    return 0;
 
-}
-
-int smart_moveright(int cCol, int *xStart, int longestLineLength, int WIDTH){
-
-    if((*xStart)+cCol <= longestLineLength+1){
-        if(cCol == WIDTH && cCol+(*xStart) != longestLineLength+1){
-            (*xStart)++;
-            return 1;
-        }
-        else{
-            moveright();
-        }
-
-    }
-    return 0;
+    return 2;
 
 }
 
@@ -670,27 +495,25 @@ int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH)
 
 
     logLine("\n in SMART_MOVERIGHT2----------\n");
-    logLine("linelength = ");logNum(length);
     logLine("\ncCol = ");logNum(cCol);
     logLine("\nxStart = ");logNum(*xStart);
     logLine("\nxOffset = ");logNum(xOffset);
     logLine("\nlength = ");logNum(length);
-
-
-    if(cCol == WIDTH+1 && (*xStart)+cCol-xOffset < length){
+    logLine("\nwidth = ");logNum(WIDTH);
+    if(cCol-xOffset == WIDTH-1 && (*xStart)+cCol-xOffset < length){
+        logLine("increating xStart");
         (*xStart)++;
         return 1;
     }
 
-    if((*xStart+cCol-xOffset) < length)
+    if((*xStart+cCol-xOffset) < length){
         moveright();
-
-    return 0;
-
-
-
+        return 0;
+    }
+    logLine("returning 2");
+    return 2;
+    logLine("DONE");
 }
-
 
 size_t countLongestLineBuffer(char ** buffer, size_t length){
     size_t longest = 0;
@@ -706,7 +529,7 @@ size_t countLongestLineBuffer(char ** buffer, size_t length){
 void logLine(char * line){
 
     FILE * log = fopen("main.log","a");
-    fprintf(log,"%s\n",line);
+    fprintf(log,"%s",line);
     fclose(log);
 }
 void logChar(char ch){
@@ -727,3 +550,84 @@ void logNum(double num){
 }
 
 void clearLog(){ FILE * log = fopen("main.log","w"); fclose(log);}
+
+
+void print_with_offset(const char *line, int xOffset) {
+    for (int i = 0; i < xOffset; i++) {
+      moveright();
+    }
+    printf("%s\n", line);
+}
+
+
+void drawLogo(int HEIGHT, int WIDTH){
+
+    
+    short text_color = 230;
+    setTextColor(text_color);
+    // Define the ASCII art lines
+    const char *art[] = {
+        "                       Phi 0.0.1",
+        "                Open Source Text Editor",
+        "                                  ,",
+        "                 ,g@@@@MT    g@@@@@@@@@@g",
+        "               g@@@@M       @@@@NMM%@@@@@@@,",
+        "             g@@@@@        @@@@`     \"%@@@@@@",
+        "            @@@@@@         @@@@        ^@@@@@@",
+        "           @@@@@@E         @@@@         \"@@@@@@",
+        "          j@@@@@@          @@@@          ]@@@@@E",
+        "          ]@@@@@@          @@@@           @@@@@[",
+        "          ]@@@@@@          @@@@           @@@@@@",
+        "           @@@@@@W         @@@@           @@@@@\"",
+        "           $@@@@@@         @@@@          ]@@@@@",
+        "            $@@@@@W        @@@@         ,@@@@@",
+        "             ?@@@@@@       @@@@        a@@@@C",
+        "               T@@@@@p     @@@@      g@@@@M",
+        "                 |Y0@@@@mg,@@@@,ag@@@@@M\"",
+        "                     .TTMM%@@@@MMMT!",
+        "                           @@@@",
+        "                           @@@@",
+        "                           @@@@",
+        "                           @@@@",
+        "                           \\@@/",
+    };
+
+    int art_height = sizeof(art) / sizeof(art[0]);
+    int art_width = 0;
+
+    // Find the width of the longest line in the ASCII art
+    for (int i = 0; i < art_height; i++) {
+        int line_len = strlen(art[i]);
+        if (line_len > art_width) {
+            art_width = line_len;
+        }
+    }
+
+    // Calculate xOffset and yOffset
+    int xOffset = (WIDTH - art_width) / 2;
+    int yOffset = (HEIGHT - art_height) / 2;
+
+    // Print the ASCII art with the offsets
+    for (int i = 0; i < yOffset; i++) {
+        printf("\n");  // Printing blank lines to center vertically
+    }
+
+    for (int i = 0; i < art_height; i++) {
+        print_with_offset(art[i], xOffset);
+    }
+    setTextColor(0);
+
+}
+
+
+
+char updateMode(char inputch, char *mode){
+
+  if(inputch == 'i' && *mode != 'i'){
+    *mode = 'i';
+    return 1;
+  }else return 0; 
+
+
+
+}
