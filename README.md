@@ -75,5 +75,18 @@ commit #12 <br />
 added w q q! wq commands <br />
 added better status bar support <br />
 can finally create a new file by typing ./editor [new filename] and it will create a blank file <br />
+
+
+commit #13 <br />
+changed colorscheme <br />
+added a x s in normal mode <br />
+changed project name and reorganized files <br />
+removed cursor wrapping lines for now <br />
+changed some error messages <br />
+fixed status bar \t and \033 errors <br />
+going to finally add \t support and maybe a smart indent system <br />
+cleaned up some redundant code and removed some functions <br /> 
+can now delete line 0 and can hit 'q' more smoothly <br />
+next commit, add oO and fF <br />
 .
 
