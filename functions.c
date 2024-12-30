@@ -4,7 +4,7 @@
 #include <termios.h>
 
 
-void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn,size_t linecount){ 
+void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn,size_t linecount,short colors[]){ 
 
     setlocale(LC_CTYPE,"");
     //BORDERS
@@ -17,11 +17,11 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
     wchar_t BOTTOMLEFTCORNER = 0x2514;
     wchar_t BOTTOMRIGHTCORNER = 0x2518;
 
-    short border_color = 230; 
-    short text_color = 230;
-    short bg_file_color = 236;
-    short bg_unused_color = 235; 
-    short comment_color = 242;
+    short text_color = colors[0];
+    short bg_file_color = colors[1];
+    short bg_unused_color = colors[2]; 
+    short comment_color = colors[3];
+    short border_color = colors[4]; 
     
     move00();
     hidecursor();
@@ -120,15 +120,9 @@ void create_window_inoutRANGE(int startx, int starty, int win_height,int max_wid
             
     }
     showcursor();
+    setTextColor(0);
+    setBgColor(0);
 }
-
-void printRightAlign(int num, short width){
-
-
-
-
-}
-
 
 
 void set_input_mode(struct termios *old_termios) {
@@ -318,7 +312,7 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, s
     return status;
 }
 
-void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* xStart, int yOffset, int xOffset, int rend_HEIGHT, int rend_WIDTH, size_t linecount){
+void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* xStart, int yOffset, int xOffset, int rend_HEIGHT, int rend_WIDTH, size_t linecount,short colors[]){
 
 
     char * line = f_buf[*cRow+(*yStart)-yOffset];
@@ -333,7 +327,7 @@ void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* x
         *xStart = len-rend_WIDTH+1;
         moveFlag = 1;
    }
-    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,*yStart,*xStart,linecount);
+    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,*yStart,*xStart,linecount,colors);
     if(moveFlag){ movecurs(*cRow,rend_WIDTH+xOffset-1);}
     else {movecurs(*cRow,(int)(len+xOffset));}
 
@@ -341,7 +335,7 @@ void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* x
 
 
 
-void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount){
+void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * xStart, int yOffset, int xOffset,int rend_HEIGHT,int WIDTH,size_t linecount,short colors[]){
         if(!snap_left(f_buf, cRow,cCol,yStart,xStart,yOffset,xOffset)){
             get_cursor_pos(cRow,cCol);
             size_t len = strlen(f_buf[(*cRow)+(*yStart)-yOffset]);
@@ -352,7 +346,7 @@ void snapCursorLeft(char ** f_buf, int * cRow, int  * cCol, int * yStart, int * 
                 *xStart = len;
                 *cCol = xOffset;
             }
-            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,*yStart,*xStart,linecount);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,WIDTH,f_buf,*yStart,*xStart,linecount,colors);
             movecurs(*cRow,*cCol);
         }
 }
@@ -560,14 +554,15 @@ void print_with_offset(const char *line, int xOffset) {
 }
 
 
-void drawLogo(int HEIGHT, int WIDTH){
+void drawLogo(int HEIGHT, int WIDTH, short colors[]){
 
-    
-    short text_color = 230;
-    setTextColor(text_color);
+     
+    setTextColor(colors[0]);
+    setBgColor(colors[2]);
+
     // Define the ASCII art lines
     const char *art[] = {
-        "                       Phi 0.0.1",
+        "                       Phi 0.0.10",
         "                Open Source Text Editor",
         "                                  ,",
         "                 ,g@@@@MT    g@@@@@@@@@@g",
@@ -616,6 +611,7 @@ void drawLogo(int HEIGHT, int WIDTH){
         print_with_offset(art[i], xOffset);
     }
     setTextColor(0);
+    setBgColor(0);
 
 }
 
@@ -627,7 +623,51 @@ char updateMode(char inputch, char *mode){
     *mode = 'i';
     return 1;
   }else return 0; 
+}
 
+void drawStatusBar(char * text,  int width , short colors[]){
+
+  setTextColor(colors[3]);
+  setBgColor(colors[0]);
+
+
+  int i = 0;
+  while( i < width ){
+    if( i < strlen(text))
+      printf("%c",text[i]);
+    else{
+      printf(" ");
+    }
+    i++;
+  }
+  setTextColor(0);
+  setBgColor(0);
+}
+
+
+void update_statusbad(char * words,int widith, int height, char ** modes, char mode, int cRow, int cCol, int yOffset,char * filename,short colors[]){
+
+      hidecursor();
+
+      logLine("\nMade it\n");
+      logLine(words);
+      char text[widith];
+
+      if(words[0] == '\0'){
+          if(mode == 'n')
+            strcpy(text,modes[0]);
+          else if(mode == 'i')
+            strcpy(text,modes[1]);
+          strcat(text,"    ");
+          strcat(text,filename);
+      }else{
+        strcpy(text,words);
+      }
+
+      movecurs(height+yOffset+1,0);
+      drawStatusBar(text,widith,colors);
+      movecurs(cRow,cCol);
+      showcursor();
 
 
 }

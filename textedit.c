@@ -64,6 +64,7 @@ int main(int argc, char ** argv){
         szHelper = HEIGHT;
         char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
         f_buf = new_f_buf;
+        strcpy(filename,"none");
     }
 
     //if file is shorter than the terminal height then fill with blank lines
@@ -75,16 +76,18 @@ int main(int argc, char ** argv){
         }
     }
 
-
     if(szHelper < HEIGHT){
         szHelper = HEIGHT;
     }
 
     int yStart = 0;
     int xStart = 0;
-    int yOffset = 2;
-    int xOffset = 7;
-    short rend_HEIGHT = HEIGHT - yOffset-1;
+    int xCorner = 0;
+    int yCorner = 0;
+    int yOffset = 2 + yCorner;
+    int xOffset = 7 + xCorner;
+    short statusBarHeight = 1;
+    short rend_HEIGHT = HEIGHT - yOffset-yCorner - statusBarHeight;
     short rend_WIDTH = WIDTH - xOffset;
     int cRow = yOffset;
     int cCol = xOffset;
@@ -93,22 +96,43 @@ int main(int argc, char ** argv){
     ch = '\0';
     char mode = 'n'; 
 
-    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
-    if(argc == 1){ movecurs((int)(cRow+linecount),cCol); drawLogo(rend_HEIGHT,rend_WIDTH); }
+
+    short border_color = 230; 
+    short text_color = 230;
+    short bg_file_color = 236;
+    short bg_unused_color = 235; 
+    short comment_color = 242;
+
+    char temp[512];
+    char * modes[32] = {"--NORMAL--", "--INSERT--"};
+    strcpy(temp,modes[0]);
+    strcat(temp,"    ");
+    strcat(temp,filename);
+
+    short colors[] = {text_color,bg_file_color,bg_unused_color,comment_color,border_color};
+
+
+    create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
+    drawStatusBar(temp,WIDTH,colors);
+    if(argc == 1){movecurs((int)(cRow+linecount),cCol); drawLogo(rend_HEIGHT,rend_WIDTH, colors); }
     movecurs(cRow,cCol);
 
     char input_buffer[8];
     ssize_t bytes_read;
-
+    char cmdbuf[128];
+    short cmdi = 0;
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
         
+
         hidecursor();
         clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col;
         HEIGHT = w.ws_row;
-        rend_HEIGHT = HEIGHT - yOffset-1;
+        rend_HEIGHT = HEIGHT - yOffset-yCorner-statusBarHeight;
         rend_WIDTH = WIDTH - xOffset ;
+        
+
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
         for(int i = 0 ; i < 8 ; i++){
@@ -116,7 +140,10 @@ int main(int argc, char ** argv){
         }
 
 
-        if(updateMode(ch,&mode)) continue; 
+        if(updateMode(ch,&mode)){ 
+          update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
+          continue;
+        }
         
         if(mode == 'n'){
           if(ch == 'h' || ch == 'j' || ch == 'k' || ch == 'l'){
@@ -180,10 +207,8 @@ int main(int argc, char ** argv){
             while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] != ' '){
               if(cCol == xOffset && xStart != 0){
                 xStart--;
-                logLine("adjusting screen\n");
                 update_made = 1;
               }else{
-                logLine("decremening\n");
                 cCol--;
               }
 
@@ -193,6 +218,41 @@ int main(int argc, char ** argv){
             movecurs(cRow,cCol);
             if(cCol+xStart-xOffset != 0)
               smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+          }else if(ch == ':'){
+
+            size_t oldRow = cRow;
+            size_t oldCol = cCol;
+            cmdbuf[cmdi] = ch;
+            update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
+            showcursor();
+            movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
+            cmdi++;
+            char buf[8];
+            while((bytes_read = read(STDIN_FILENO,buf,sizeof(buf))) != -1){
+              if(buf[0] == '\n') break;
+
+              if((short)buf[0] == 127){
+                cmdbuf[cmdi-1] = '\0';
+                cmdi--;
+                if(cmdi == 0) break;
+              }else{
+                cmdbuf[cmdi] = buf[0];
+                cmdi++;
+              }
+              update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
+              movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
+            }   
+            size_t cmd_length = strlen(cmdbuf);
+            if(strncmp(cmdbuf,":saveas ",7) == 0){
+              char * newname = cmdbuf+8;
+              strcpy(filename,newname); 
+            }
+            memset(cmdbuf,'\0',sizeof(cmdbuf));
+            cmdi = 0;
+            cRow = oldRow;
+            cCol = oldCol;
+            movecurs(cRow,cCol);
+            hidecursor();
           }
         }
 
@@ -218,7 +278,7 @@ int main(int argc, char ** argv){
                           if(yStart+cRow-yOffset != linecount-1){
                             smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT);
                             get_cursor_pos(&cRow,&cCol);
-                            create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount);
+                            create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
                             movecurs(cRow,xOffset);
                         }
                         default:
@@ -234,7 +294,7 @@ int main(int argc, char ** argv){
                               if(yStart+cRow-yOffset != 0){
                                 smart_moveup(cRow,&yStart,yOffset);
                                 get_cursor_pos(&cRow,&cCol);
-                                snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+                                snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
                                 smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
                                 get_cursor_pos(&cRow,&cCol);
                               }
@@ -264,7 +324,7 @@ int main(int argc, char ** argv){
                     smart_moveup(cRow,&yStart,yOffset);
                     get_cursor_pos(&cRow,&cCol);
 
-                    snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+                    snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
                     get_cursor_pos(&cRow,&cCol);
 
 
@@ -324,7 +384,7 @@ int main(int argc, char ** argv){
                 }
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
-                create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount);
+                create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
                 movecurs(cRow,xOffset);
             }else{
 
@@ -341,13 +401,16 @@ int main(int argc, char ** argv){
         get_cursor_pos(&cRow,&cCol);
         if(update_made){ 
             longestline = countLongestLineBuffer(f_buf,linecount);
-            create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount);
+            create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
             movecurs(cRow,cCol);
             update_made = 0;
         }
 
+
+        update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors);
+
         memset(input_buffer,'\0',sizeof(input_buffer));
-        snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount);
+        snapCursorLeft(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
         get_cursor_pos(&cRow,&cCol);
         showcursor();
 
@@ -370,3 +433,7 @@ int main(int argc, char ** argv){
     showcursor();
     return 0;
 }
+
+
+
+
