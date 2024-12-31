@@ -26,6 +26,9 @@ void logLine(char * line);
 void logNum(double num);
 void clearLog();
 
+void loadFile(char *** dest,char * filename,size_t * linecount, size_t * longestLine, size_t * szHelper,size_t HEIGHT);
+void createFile(char *** dest,char * filename,size_t * linecount, size_t * longestLine, size_t * szHelper,size_t HEIGHT);
+
 void set_input_mode(struct termios *old_termios); //gets raw terminal input without echo
 void restore_input_mode(struct termios *old_termios); //resets to needing to hit return and echos input
 

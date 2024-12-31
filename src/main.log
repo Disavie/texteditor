@@ -1,1 +1,270 @@
-\:\ \\\\\\\\\\\\\\
+
+read line 	#include "mytui.h"
+read line 	#include "ansihelpers.h"
+read line 	
+read line 	
+read line 	#include <stdio.h>
+read line 	#include <string.h>
+read line 	
+read line 	void print_with_offset(const char *line, int xOffset) {
+read line 	    for (int i = 0; i < xOffset; i++) {
+read line 	      moveright();
+read line 	    }
+read line 	    printf("%s\n", line);
+read line 	}
+read line 	
+read line 	void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
+read line 	
+read line 	    setTextColor(colors[0]);
+read line 	    setBgColor(colors[2]);
+read line 	
+read line 	    // Define the ASCII art lines
+read line 	    const char *art[] = {
+read line 	        "                         Zep v0.0.14",
+read line 	        "               Open source, ANSI-code text editor",
+read line 	        "",
+read line 	        "                     @@PMTTTTTTTT]@@@@M",
+read line 	        "                    j@          g@@@P",
+read line 	        "                    ?`        ,@@@@M",
+read line 	        "                             g@@@P",
+read line 	        "                           ,@@@@|",
+read line 	        "                     TTTTT$@@@MTTTTTTT",
+read line 	        "                        ,@@@@\"",
+read line 	        "                       g@@@M",
+read line 	        "                     ,@@@@T           ,E",
+read line 	        "                    @@@@E            y@",
+read line 	        "                  y@@@@mmmmmmmmmmm@@@@@",
+read line 	    };
+read line 	
+read line 	    int art_height = sizeof(art) / sizeof(art[0]);
+read line 	    int art_width = 0;
+read line 	
+read line 	    // Find the width of the longest line in the ASCII art
+read line 	    for (int i = 0; i < art_height; i++) {
+read line 	        int line_len = strlen(art[i]);
+read line 	        if (line_len > art_width) {
+read line 	            art_width = line_len;
+read line 	        }
+read line 	    }
+read line 	
+read line 	    // Calculate xOffset and yOffset
+read line 	    int xOffset = (WIDTH - art_width) / 2;
+read line 	    int yOffset = (HEIGHT - art_height) / 2;
+read line 	
+read line 	    // Print the ASCII art with the offsets
+read line 	    for (int i = 0; i < yOffset; i++) {
+read line 	        printf("\n");  // Printing blank lines to center vertically
+read line 	    }
+read line 	
+read line 	    for (int i = 0; i < art_height; i++) {
+read line 	        print_with_offset(art[i], xOffset);
+read line 	    }
+read line 	
+read line 	    setTextColor(0);
+read line 	    setBgColor(0);
+read line 	}
+read line 	
+read line 	
+read line 	
+read line 	void create_window_inoutRANGE(int startx, int starty, int win_height,int max_width, char ** args,int yIn, int xIn,size_t linecount,short colors[]){ 
+read line 	
+read line 	    setlocale(LC_CTYPE,"");
+read line 	    //BORDERS
+read line 	    const char DEF = ' ';
+read line 	    wchar_t BLOCK= 0x2588;
+read line 	    wchar_t VERTICAL_BORDER= 0x2502;
+read line 	    wchar_t HORIZONTAL_BORDER= 0x2500;
+read line 	    wchar_t TOPLEFTCORNER = 0x250C;
+read line 	    wchar_t TOPRIGHTCORNER = 0x2510;
+read line 	    wchar_t BOTTOMLEFTCORNER = 0x2514;
+read line 	    wchar_t BOTTOMRIGHTCORNER = 0x2518;
+read line 	
+read line 	    short text_color = colors[0];
+read line 	    short bg_file_color = colors[1];
+read line 	    short bg_unused_color = colors[2]; 
+read line 	    short comment_color = colors[3];
+read line 	    short border_color = colors[4]; 
+read line 	    
+read line 	    short tab_width = 4;
+read line 	    move00();
+read line 	    hidecursor();
+read line 	
+read line 	    setBgColor(bg_file_color);
+read line 	
+read line 	
+read line 	    int y = 0;
+read line 	    //setting the starty;
+read line 	    while(y < starty){
+read line 	        printf("%d\n",y);
+read line 	        y++;
+read line 	    }
+read line 	    int x = 0;
+read line 	    char letter;
+read line 	    for(int i = yIn-1 ; i < yIn+win_height+1 ; i++){
+read line 	        short isReal = 0;
+read line 	        while(x < startx){
+read line 	            printf(" ");
+read line 	            x++;
+read line 	        }
+read line 	        size_t len = 0;
+read line 	        if(i >= 0 && i < yIn+win_height){
+read line 	            if(i < linecount){
+read line 	                isReal = 1;
+read line 	                len = strlen(args[i]);
+read line 	                setBgColor(bg_file_color);
+read line 	            }else{
+read line 	                setBgColor(bg_unused_color);
+read line 	            }
+read line 	
+read line 	        }
+read line 	        if(i == yIn-1){
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc",TOPLEFTCORNER);
+read line 	            for(int i = 0 ; i < 5 ; i++)
+read line 	                printf("%lc",HORIZONTAL_BORDER);
+read line 	            setTextColor(0);
+read line 	        }else if(i == yIn+win_height){
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc",BOTTOMLEFTCORNER);
+read line 	            for(int i = 0 ; i < 5 ; i++)
+read line 	                printf("%lc",HORIZONTAL_BORDER);
+read line 	            setTextColor(0);
+read line 	        }else{
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc",VERTICAL_BORDER);
+read line 	            setTextColor(0);
+read line 	            if(isReal){
+read line 	                setTextColor(comment_color);
+read line 	                printf("%4d ",i+1);
+read line 	                setTextColor(0);
+read line 	            }else{
+read line 	                setTextColor(comment_color);
+read line 	                printf("   ~ ");
+read line 	                setTextColor(0);
+read line 	            }
+read line 	        }
+read line 	
+read line 	    
+read line 	
+read line 	
+read line 	        for(int j = xIn; j < xIn+max_width ; j++){
+read line 	            if( i == yIn-1){
+read line 	                setTextColor(border_color);
+read line 	                printf("%lc",HORIZONTAL_BORDER);
+read line 	                setTextColor(0);
+read line 	            }else if ( i == yIn+win_height){
+read line 	                setTextColor(border_color);
+read line 	                printf("%lc",HORIZONTAL_BORDER);
+read line 	                setTextColor(0);
+read line 	            }else{
+read line 	                if(j < len){
+read line 	                    setTextColor(text_color);
+read line 	                    if(args[i][j] == '\t'){
+read line 	                      for(int i = 0 ; i < tab_width ; i++){
+read line 	                        printf(" ");
+read line 	                      }
+read line 	                    }else{
+read line 	                      printf("%c",args[i][j]);
+read line 	                    }
+read line 	                    setTextColor(0);
+read line 	                }else{
+read line 	                    printf("%c",DEF);
+read line 	                }
+read line 	            }
+read line 	        }
+read line 	        x = 0;
+read line 	        if(i == yIn -1){
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc",TOPRIGHTCORNER );
+read line 	            setTextColor(0);
+read line 	        }else if(i == yIn+win_height){
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc",BOTTOMRIGHTCORNER);
+read line 	            setTextColor(0);
+read line 	        }else{
+read line 	            setTextColor(border_color);
+read line 	            printf("%lc\n",VERTICAL_BORDER);
+read line 	            setTextColor(0);
+read line 	        }
+read line 	            
+read line 	    }
+read line 	    showcursor();
+read line 	    setTextColor(0);
+read line 	    setBgColor(0);
+read line 	}
+read line 	
+read line 	void drawStatusBar(char * text,  int width , short colors[],short isError){
+read line 	
+read line 	  setTextColor(colors[2]);
+read line 	  if(isError) setTextColor(colors[5]);
+read line 	  setBgColor(colors[0]);
+read line 	
+read line 	
+read line 	  int i = 0;
+read line 	  while( i < width ){
+read line 	    if( i < strlen(text))
+read line 	      printf("%c",text[i]);
+read line 	    else{
+read line 	      printf(" ");
+read line 	    }
+read line 	    i++;
+read line 	  }
+read line 	  setTextColor(0);
+read line 	  setBgColor(0);
+read line 	}
+read line 	
+read line 	
+read line 	void update_statusbad(char * words,int widith, int height, char ** modes, char mode, int cRow, int cCol, int yOffset,char * filename,short colors[],short isError){
+read line 	
+read line 	      hidecursor();
+read line 	
+read line 	      char text[widith];
+read line 	      strcpy(text," ");
+read line 	
+read line 	      if(words[0] == '\0'){
+read line 	          if(mode == 'n')
+read line 	            strcat(text,modes[0]);
+read line 	          else if(mode == 'i')
+read line 	            strcat(text,modes[1]);
+read line 	          strcat(text,"    ");
+read line 	          strcat(text,filename);
+read line 	      }else{
+read line 	        strcpy(text,words);
+read line 	      }
+read line 	    logLine("\nwrote:");logLine(words);
+read line 	      movecurs(height+yOffset+1,0);
+read line 	      drawStatusBar(text,widith,colors,isError);
+read line 	      movecurs(cRow,cCol);
+read line 	      showcursor();
+read line 	
+read line 	}
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:cmdbuf is ::
+wrote::
+wrote::w
+wrote::wq

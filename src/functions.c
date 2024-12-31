@@ -2,6 +2,59 @@
 #include "ansihelpers.h"
 #include "mytui.h"
 
+
+void loadFile(char *** dest,char * filename,size_t * linecount, size_t * longestLine, size_t * szHelper,size_t HEIGHT){
+
+    FILE * f;
+    f = fopen(filename,"r");
+    if(f == NULL){
+        return createFile(dest,filename,linecount,longestLine,szHelper,HEIGHT);
+    }
+
+    *linecount = countLines(f);
+    *longestLine  = countLongestLine(f);
+    fclose(f);
+
+    *szHelper = *linecount; 
+    if(*linecount < HEIGHT){
+        *szHelper = HEIGHT;
+    }
+    char ** f_buf = (char **)malloc((*szHelper)*sizeof(char *));
+    *dest = f_buf;
+
+    f = fopen(filename,"r");    
+    int i = 0;
+    while(!feof(f) && i < *linecount){
+        char line[512];
+        fgets(line,sizeof(line),f);
+        size_t len = strlen(line);
+        f_buf[i] = (char *)malloc((len+1)*sizeof(char));
+        strcpy(f_buf[i],line);
+        if(f_buf[i][len-1] == '\n')
+            f_buf[i][len-1] = '\0';
+        logLine("\nread line \t");logLine(f_buf[i]);
+        i++;
+    }
+    fclose(f);
+}
+
+void createFile(char *** dest,char * filename,size_t * linecount, size_t * longestLine, size_t * szHelper,size_t HEIGHT){
+    if(strcmp(filename,"") == 0){
+        strcpy(filename,"[Unnamed File]");
+    }
+    logLine("in here");
+
+    *linecount = 1;
+    *longestLine = 0;
+    *szHelper = HEIGHT;
+    char ** buf = (char **)malloc((*szHelper)*sizeof(char *));
+    buf[0] = (char *)malloc(sizeof(char));
+    buf[0][0] = '\0';
+    logLine("did the thing\n");
+    *dest = buf;
+    
+}
+
 void set_input_mode(struct termios *old_termios) {
     struct termios new_termios;
 
@@ -168,7 +221,6 @@ int snap_left(char** buffer, int * cursRow, int * cursCol, int *yIn, int *xIn, s
 
     get_cursor_pos(cursRow,cursCol);
 
-    //logLine("\nMOVED TO:");
     return status;
 }
 
@@ -177,8 +229,6 @@ void snapCursorRight(char ** f_buf, int * cRow, int * cCol, int * yStart, int* x
 
     char * line = f_buf[*cRow+(*yStart)-yOffset];
     size_t len = strlen(line);
-    logLine("\nlen = ");logNum(len);
-    logLine("\nrend_WIDTH = ");logNum(rend_WIDTH);
     int moveFlag = 0;
     if(len < rend_WIDTH){
         *xStart = 0;
@@ -259,23 +309,14 @@ char *remove_line(char ***buf, int buf_row, size_t *buf_height) {
 
 char * insert_to_line(char ** buf, char * line, int buffer_row, int index_in_line,char ch){
 
-    //logLine("in insert_to_line");
-    //logLine(line);
     size_t len = strlen(line);
-    //logLine("got length");
     line = (char *)realloc(line,(len+2)*sizeof(char));
-    if(line == NULL){
-        logLine("LINE WAS NULL");
-    }
 
-    //logLine("realloc was fine");
 
     // Shift elements to the right to make space for the new element
     for (size_t i = len+1; i > index_in_line; i--) {
         line[i] = line[i - 1];
     }
-
-    //logLine("shifted correctly");
 
     // Insert the new element at the specified index
     line[index_in_line] = ch;
@@ -316,11 +357,9 @@ int smart_movedown(int cRow, int *yStart,int flag, size_t linecount, int rend_HE
 
     if(*yStart+cRow <= linecount){
         if(cRow >= rend_HEIGHT && (flag || *yStart+cRow != linecount)){ 
-            logLine("scrolling down!!!!");
             (*yStart)++;   
             return 1;
         }else{
-            logLine("moving down!   ");
             movedown();
         }
     }
@@ -344,7 +383,6 @@ int smart_moveleft(int cCol,int * xStart,short xOffset){
 int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH){
 
     if(cCol-xOffset == WIDTH-1 && (*xStart)+cCol-xOffset < length){
-        logLine("increating xStart");
         (*xStart)++;
         return 1;
     }
@@ -359,7 +397,6 @@ int smart_moveright2(int cCol, int *xStart, int xOffset,size_t length,int WIDTH)
 int smart_moveright2_insert(int cCol, int *xStart, int xOffset,size_t length,int WIDTH){
 
     if(cCol-xOffset == WIDTH-1 && (*xStart)+cCol-xOffset < length){
-        logLine("increating xStart");
         (*xStart)++;
         return 1;
     }

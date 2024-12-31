@@ -13,68 +13,29 @@ int main(int argc, char ** argv){
 
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
     short WIDTH = w.ws_col;
     short HEIGHT = w.ws_row;
 
-    char ch; 
+
     size_t linecount;
     size_t longestline;
     size_t szHelper;
     int hasSaved = 1;
     char ** f_buf;
-    char filename[32]; //<- length of filename
-    FILE * f;
-    int i = 0;
+    char filename[32]; 
 
 
     if(argc > 1){
         strcpy(filename,argv[1]);
-
-        f = fopen(filename,"r");
-        if(f == NULL){
-          goto makenew;
-        }
-
-        linecount = countLines(f);
-        longestline  = countLongestLine(f);
-        fclose(f);
-
-        szHelper = linecount; 
-        if(linecount < HEIGHT){
-            szHelper = HEIGHT;
-        }
-        char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
-        f_buf = new_f_buf;
-
-        f = fopen(argv[1],"r");    
-        i = 0;
-        while(!feof(f) && i < linecount){
-            char line[512];
-            fgets(line,sizeof(line),f);
-            size_t len = strlen(line);
-            f_buf[i] = (char *)malloc((len+1)*sizeof(char));
-            strcpy(f_buf[i],line);
-            if(f_buf[i][len-1] == '\n')
-                f_buf[i][len-1] = '\0';
-            logLine("read :");logLine(f_buf[i]);
-            i++;
-        }
-        logLine("read them all");
-        fclose(f);
+        loadFile(&f_buf,filename,&linecount,&longestline,&szHelper,HEIGHT);
 
     }else{
-        strcpy(filename,"[Unnamed File]");
-        makenew:
-        linecount = 1;
-        longestline = 0;
-        hasSaved = 1;
-        szHelper = HEIGHT;
-        char ** new_f_buf = (char **)malloc(szHelper*sizeof(char *));
-        f_buf = new_f_buf;
+        strcpy(filename,"");
+        createFile(&f_buf,filename,&linecount,&longestline,&szHelper,HEIGHT);
     }
 
     //if file is shorter than the terminal height then fill with blank lines
+    int i = linecount;
     if(linecount < HEIGHT){
         while(i < szHelper){
             f_buf[i] = (char *)malloc(sizeof(char));
@@ -89,21 +50,18 @@ int main(int argc, char ** argv){
 
     int yStart = 0;
     int xStart = 0;
-    int xCorner = 0;
-    int yCorner = 0;
-    int yOffset = 2 + yCorner;
-    int xOffset = 7 + xCorner;
+    int yOffset = 2 ;
+    int xOffset = 7 ;
     short statusBarHeight = 1;
     char statusBarMsg[128] = "";
-    short rend_HEIGHT = HEIGHT - yOffset-yCorner - statusBarHeight;
+    short rend_HEIGHT = HEIGHT - yOffset- statusBarHeight;
     short rend_WIDTH = WIDTH - xOffset;
     int cRow = yOffset;
     int cCol = xOffset;
     int hasQuit = 0;
     short update_made = 1;
-    ch = '\0';
+    char ch = '\0';
     char mode = 'n'; 
-
 
     short text_color = 195;
     short bg_file_color = 236;
@@ -111,23 +69,20 @@ int main(int argc, char ** argv){
     short comment_color = 242;
     short border_color = text_color; 
     short error_color = 161;
-
-    char temp[512];
-    char * modes[32] = {"--NORMAL--", "--INSERT--"};
-    strcpy(temp," ");
-    strcat(temp,modes[0]);
-    strcat(temp,"    ");
-    strcat(temp,filename);
-
     short colors[] = {text_color,bg_file_color,bg_unused_color,comment_color,border_color,error_color};
 
+    char temp[128];
+    char * modes[32] = {"--NORMAL--", "--INSERT--"};
+    strcpy(temp," ");strcat(temp,modes[0]);strcat(temp,"    ");strcat(temp,filename);
 
-    create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
+
+    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
     drawStatusBar(temp,WIDTH,colors,0);
     if(argc == 1){movecurs((int)(cRow+linecount),cCol); drawLogo(rend_HEIGHT,rend_WIDTH, colors); }
     movecurs(cRow,cCol);
 
     char input_buffer[8];
+    memset(input_buffer,'\0',sizeof(input_buffer));
     char motion_buffer[8];
     char prefixes[] = {'d','y'};
     char movements[] = {'w','b','f','$','^'};
@@ -137,30 +92,25 @@ int main(int argc, char ** argv){
     
     ssize_t bytes_read;
     char cmdbuf[128];
+    memset(cmdbuf,'\0',sizeof(cmdbuf));
     short cmdi = 0;
     short isError = 0;
 
     int quit = 0;
 
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
-        
 
         hidecursor();
         isError = 0;
-        clearLog();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col;
         HEIGHT = w.ws_row;
-        rend_HEIGHT = HEIGHT - yOffset-yCorner-statusBarHeight;
+        rend_HEIGHT = HEIGHT - yOffset-statusBarHeight;
         rend_WIDTH = WIDTH - xOffset ;
         
 
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
-        for(int i = 0 ; i < 8 ; i++){
-          logChar(input_buffer[i]);
-        }
-
 
         if(updateMode(ch,&mode)){ 
           update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
@@ -168,7 +118,7 @@ int main(int argc, char ** argv){
         }
         
         if(mode == 'n'){
-            switch(ch){
+            switch((int)ch){
                 case 'h':
                     input_buffer[2] = 'D';
                     goto movement;
@@ -245,6 +195,8 @@ int main(int argc, char ** argv){
                     char temp = getchar();
                     short found = 0;
                     size_t temp2= cCol;
+                    size_t temp3= xStart;
+                    update_made = 1;
 
                     smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
                     get_cursor_pos(&cRow,&cCol);
@@ -253,10 +205,11 @@ int main(int argc, char ** argv){
                             found = 1;
                             break;
                         }
-                        smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                        smart_moveright2_insert(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
                         get_cursor_pos(&cRow,&cCol);
                     }
                     if(!found){
+                        xStart = temp3;
                         cCol= temp2; 
                         movecurs(cRow,cCol);
                     }
@@ -266,6 +219,8 @@ int main(int argc, char ** argv){
                     temp = getchar();
                     found = 0;
                     temp2= cCol;
+                    temp3 = xStart;
+                    update_made = 1;
 
                     smart_moveleft(cCol,&xStart,xOffset);
                     get_cursor_pos(&cRow,&cCol);
@@ -276,21 +231,32 @@ int main(int argc, char ** argv){
                         }
                         smart_moveleft(cCol,&xStart,xOffset);
                         get_cursor_pos(&cRow,&cCol);
+                        if(xStart+cCol-xOffset == 0) break;
+                    }
+                    if(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] == temp){
+                        found = 1;
                     }
                     if(!found){
                         cCol= temp2; 
+                        xStart = temp3;
                         movecurs(cRow,cCol);
                     }
+                    break;
+                case 21:
+
+                    logLine("you pressed CTRL+U");
+
                     break;
                 case ':':
                     ;
                     size_t oldRow = cRow;
                     size_t oldCol = cCol;
 
-                    cmdbuf[cmdi] = ':';
+                    cmdbuf[cmdi] = ch;
+                    logLine("cmdbuf is :");logLine(cmdbuf);
                     update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
                     showcursor();
-                    movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
+                    movecurs(rend_HEIGHT+yOffset+1,2);
                     cmdi++;
                     char buf[8];
                     int nocheck = 0;
@@ -337,7 +303,7 @@ int main(int argc, char ** argv){
                                 quit = 1;
                                 break;
                             }else{
-                                strcpy(statusBarMsg,"Unsaved changes, try w or q! to quit without saving");
+                                strcpy(statusBarMsg,"Unsaved changes, try :w or :q! to quit without saving");
                                 isError = 1;
                             }
                         }else if(strcmp(cmdbuf,":q!")==0){
@@ -346,7 +312,24 @@ int main(int argc, char ** argv){
                         }   
                         else if(strncmp(cmdbuf,":saveas ",7) == 0){
                             char * newname = cmdbuf+8;
+                            saveFile(filename,linecount,&f_buf);
+                            hasSaved = 1;
                             strcpy(filename,newname); 
+                        }else if(strncmp(cmdbuf,":e!",3) == 0){
+                            char * newname = cmdbuf+4;
+                            strcpy(filename,newname);
+                            loadFile(&f_buf,filename,&linecount,&longestline,&szHelper,HEIGHT);
+                            update_made = 1;
+                        }else if(strncmp(cmdbuf,":e",2) == 0){
+                            if(hasSaved){
+                                char * newname = cmdbuf+3;
+                                strcpy(filename,newname);
+                                loadFile(&f_buf,filename,&linecount,&longestline,&szHelper,HEIGHT);
+                            }else{
+                                strcpy(statusBarMsg,"Unsaved changes, try :w or :e! to edit without saving");
+                                isError=1;
+                            }
+                            update_made = 1;
                         }else{
                             strcpy(statusBarMsg,"Unknown command \'"); 
                             strcat(statusBarMsg,cmdbuf);
@@ -367,71 +350,70 @@ int main(int argc, char ** argv){
         }
         if(quit)break;
 
-
         if (ch == '\033'){
-            if(input_buffer[1] == '['){
-              movement:
-              switch (input_buffer[2]){
-                  case 'A':
-                      if(smart_moveup(cRow,&yStart,yOffset))
-                          update_made = 1;
-                      break;
-                  case 'B':
-                      if(smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT))
-                          update_made = 1;
-                      break;
+            if(input_buffer[1] == '\0'){
 
-                  case 'C':
-                      if(mode == 'i') i = smart_moveright2_insert(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-                      else i =smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-                      
-                      switch(i){
-
-                        case 0:
-                          break;
-                        case 2:
-                          continue;
-                          if(yStart+cRow-yOffset != linecount-1){
-                            smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT);
-                            get_cursor_pos(&cRow,&cCol);
-                            create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
-                            movecurs(cRow,xOffset);
-                        }
-                        default:
-                          update_made = 1;
-                      }
-                      break;
-
-                  case 'D':
-                      switch (smart_moveleft(cCol,&xStart,xOffset)){
-                          case 0:
-                              break;
-                          case 2:
-                              continue;
-                              if(yStart+cRow-yOffset != 0){
-                                smart_moveup(cRow,&yStart,yOffset);
-                                get_cursor_pos(&cRow,&cCol);
-                                snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
-                                smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-                                get_cursor_pos(&cRow,&cCol);
-                              }
-                          default:
-                            update_made = 1;
-                      }
-
-                      break;
-                  default:
-                    logLine("idunno what escape sequence this shit is\n");
-              }
-            }else{
-              if(input_buffer[1] == '\0'){ //case of hitting ESC
                 mode = 'n'; 
+                update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
                 if(xStart+cCol-xOffset == strlen(f_buf[yStart+cRow-yOffset])){
-                  smart_moveleft(cCol,&xStart,xOffset);
-                }   
-              }else;
+                    smart_moveleft(cCol,&xStart,xOffset);
+                }else;
+
+            }else if(input_buffer[1] == '['){
+            movement:
+                switch (input_buffer[2]){
+                    case 'A':
+                        if(smart_moveup(cRow,&yStart,yOffset))
+                            update_made = 1;
+                        break;
+                    case 'B':
+                        if(smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT))
+                            update_made = 1;
+                        break;
+
+                    case 'C':
+                        if(mode == 'i') i = smart_moveright2_insert(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                        else i =smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+
+                        switch(i){
+
+                            case 0:
+                                break;
+                            case 2:
+                                continue;
+                                if(yStart+cRow-yOffset != linecount-1){
+                                    smart_movedown(cRow,&yStart,0,linecount,rend_HEIGHT);
+                                    get_cursor_pos(&cRow,&cCol);
+                                    create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
+                                    movecurs(cRow,xOffset);
+                                }
+                            default:
+                                update_made = 1;
+                        }
+                        break;
+
+                    case 'D':
+                        switch (smart_moveleft(cCol,&xStart,xOffset)){
+                            case 0:
+                                break;
+                            case 2:
+                                continue;
+                                if(yStart+cRow-yOffset != 0){
+                                    smart_moveup(cRow,&yStart,yOffset);
+                                    get_cursor_pos(&cRow,&cCol);
+                                    snapCursorRight(f_buf,&cRow,&cCol,&yStart,&xStart,yOffset,xOffset,rend_HEIGHT,rend_WIDTH,linecount,colors);
+                                    smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                                    get_cursor_pos(&cRow,&cCol);
+                                }
+                            default:
+                                update_made = 1;
+                        }
+
+                        break;
+                    default:
+                        ;
+                }
             }
-            goto end_frame;
         }
 
         if(mode == 'i'){
@@ -498,13 +480,11 @@ int main(int argc, char ** argv){
                     //Insert line
                     char * t = insert_line(&f_buf,newl,line_index+1,&linecount);
                 }else{
-                    logLine("inserting blank new line");
                     char * line = "\0";
                     char * t = insert_line(&f_buf,line,line_index+1,&linecount);
                 }
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
-             //   create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
                 movecurs(cRow,xOffset);
             }else{
 
@@ -514,7 +494,6 @@ int main(int argc, char ** argv){
                 else smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
 
             }
-            logLine("update_made = 1");
             update_made = 1;
             hasSaved = 0;
         }
@@ -523,7 +502,7 @@ int main(int argc, char ** argv){
         get_cursor_pos(&cRow,&cCol);
         if(update_made){ 
             longestline = countLongestLineBuffer(f_buf,linecount);
-            create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
+            create_window_inoutRANGE(0,0,rend_HEIGHT,rend_WIDTH,f_buf,yStart,xStart,linecount,colors);
             movecurs(cRow,cCol);
             update_made = 0;
         }

@@ -99,6 +99,12 @@ ADD CTRL+U and CTRL+D and zz next commit <br />
 start work on a proper system for doing things like dw 2j 5k dfn etc etc <br />
 
 
-
+commit #15 <br />
+fF now scrolls properly <br />
+bug fixes <br />
+added :e <br>
+reformatted some things <br />
+ADD \t CTRL U CTRL D and zz <br />
+penis
 
 

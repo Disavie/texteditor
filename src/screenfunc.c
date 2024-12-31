@@ -19,7 +19,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
 
     // Define the ASCII art lines
     const char *art[] = {
-        "                         Zep v0.0.14",
+        "                         Zep v0.0.15",
         "               Open source, ANSI-code text editor",
         "",
         "                     @@PMTTTTTTTT]@@@@M",
@@ -230,7 +230,7 @@ void update_statusbad(char * words,int widith, int height, char ** modes, char m
       }else{
         strcpy(text,words);
       }
-
+    logLine("\nwrote:");logLine(words);
       movecurs(height+yOffset+1,0);
       drawStatusBar(text,widith,colors,isError);
       movecurs(cRow,cCol);
