@@ -105,16 +105,17 @@ int main(int argc, char ** argv){
     char mode = 'n'; 
 
 
-    short text_color = 224;
+    short text_color = 195;
     short bg_file_color = 236;
     short bg_unused_color = 235; 
     short comment_color = 242;
-    short border_color = 224; 
+    short border_color = text_color; 
     short error_color = 161;
 
     char temp[512];
     char * modes[32] = {"--NORMAL--", "--INSERT--"};
-    strcpy(temp,modes[0]);
+    strcpy(temp," ");
+    strcat(temp,modes[0]);
     strcat(temp,"    ");
     strcat(temp,filename);
 
@@ -127,10 +128,20 @@ int main(int argc, char ** argv){
     movecurs(cRow,cCol);
 
     char input_buffer[8];
+    char motion_buffer[8];
+    char prefixes[] = {'d','y'};
+    char movements[] = {'w','b','f','$','^'};
+    //motion anatomy prefix (d y)
+    //count
+    //motion type (w f<char> $ ^)
+    
     ssize_t bytes_read;
     char cmdbuf[128];
     short cmdi = 0;
     short isError = 0;
+
+    int quit = 0;
+
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
         
 
@@ -157,141 +168,205 @@ int main(int argc, char ** argv){
         }
         
         if(mode == 'n'){
-          if(ch == 'h' || ch == 'j' || ch == 'k' || ch == 'l'){
             switch(ch){
-              case 'h':
-                input_buffer[2] = 'D';
-                break;
-              case 'j':
-                input_buffer[2] = 'B';
-                break;
-              case 'k':
-                input_buffer[2] = 'A';
-                break;
-              case 'l':
-                input_buffer[2] = 'C';
-                break;
+                case 'h':
+                    input_buffer[2] = 'D';
+                    goto movement;
+                case 'j':
+                    input_buffer[2] = 'B';
+                    goto movement;
+                case 'k':
+                    input_buffer[2] = 'A';
+                    goto movement;
+                case 'l':
+                    input_buffer[2] = 'C';
+                    goto movement;
+                case 'd':
+                    if(linecount == 1) {
+                        char * newline = (char *)malloc(sizeof(char));
+                        newline[0] = '\0';
+                        void * oldline = f_buf[0];
+                        f_buf[0] = newline;
+                        free(oldline);
+                    }else{
+                        char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
+                        if(yStart+cRow-yOffset == linecount) smart_moveup(cRow,&yStart,yOffset);
+                    }
+                    update_made = 1;
+                    break;
+                case 'w':
+                    if(mimic_vim_w(&f_buf, &yStart, &xStart,&cRow, &cCol, yOffset, xOffset,rend_WIDTH))
+                        update_made = 1;
+                    strcpy(motion_buffer,"");
+                    break;
+                case 'b':
+                    if(mimic_vim_b(&f_buf, &yStart, &xStart,&cRow, &cCol, yOffset, xOffset,rend_WIDTH))
+                        update_made = 1;
+                    break;
+                case 'a':
+                    smart_moveright2_insert(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                    get_cursor_pos(&cRow,&cCol);
+                    updateMode('i',&mode); 
+                    update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                    goto end_frame;
+                case 'x':
+                    remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset,xStart+cCol-xOffset); 
+                    update_made = 1;
+                    break;
+                case 's':
+                    remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset,xStart+cCol-xOffset); 
+                    update_made = 1;
+                    updateMode('i',&mode); 
+                    update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                    goto end_frame;
+                case 'o':
+                    ;    
+                    insert_line(&f_buf,"",yStart+cRow-yOffset+1,&linecount);
+                    smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
+                    get_cursor_pos(&cRow,&cCol);
+                    movecurs(cRow,xOffset);
+                    update_made = 1;
+                    hasSaved = 0;
+                    updateMode('i',&mode); 
+                    update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                    goto end_frame;
+                case 'O':
+                    ;    
+                    insert_line(&f_buf,"",yStart+cRow-yOffset,&linecount);
+                    get_cursor_pos(&cRow,&cCol);
+                    movecurs(cRow,xOffset);
+                    update_made = 1;
+                    hasSaved = 0;
+                    updateMode('i',&mode); 
+                    update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                    goto end_frame;
+                case 'f':
+                    ;
+                    char temp = getchar();
+                    short found = 0;
+                    size_t temp2= cCol;
+
+                    smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                    get_cursor_pos(&cRow,&cCol);
+                    while(xStart+cCol-xOffset < strlen(f_buf[yStart+cRow-yOffset])){
+                        if(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] == temp){
+                            found = 1;
+                            break;
+                        }
+                        smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
+                        get_cursor_pos(&cRow,&cCol);
+                    }
+                    if(!found){
+                        cCol= temp2; 
+                        movecurs(cRow,cCol);
+                    }
+                    break;
+                case 'F':
+                    ;
+                    temp = getchar();
+                    found = 0;
+                    temp2= cCol;
+
+                    smart_moveleft(cCol,&xStart,xOffset);
+                    get_cursor_pos(&cRow,&cCol);
+                    while(xStart+cCol-xOffset > -1){
+                        if(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset] == temp){
+                            found = 1;
+                            break;
+                        }
+                        smart_moveleft(cCol,&xStart,xOffset);
+                        get_cursor_pos(&cRow,&cCol);
+                    }
+                    if(!found){
+                        cCol= temp2; 
+                        movecurs(cRow,cCol);
+                    }
+                    break;
+                case ':':
+                    ;
+                    size_t oldRow = cRow;
+                    size_t oldCol = cCol;
+
+                    cmdbuf[cmdi] = ':';
+                    update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                    showcursor();
+                    movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
+                    cmdi++;
+                    char buf[8];
+                    int nocheck = 0;
+                    while((bytes_read = read(STDIN_FILENO,buf,sizeof(buf))) != -1){
+                        if(buf[0] == '\n') break;
+                        if(buf[0] == '\033') {nocheck = 1; break;}
+                        if(buf[0] == '\t') continue;
+
+                        if((short)buf[0] == 127){
+                            cmdbuf[cmdi-1] = '\0';
+                            cmdi--;
+                            if(cmdi == 0) break;
+                        }else{
+                            cmdbuf[cmdi] = buf[0];
+                            cmdi++;
+                        }
+                        update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
+                        movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
+                    }   
+                    if(!nocheck){ 
+                        size_t cmd_length = strlen(cmdbuf);
+                        trim_trailing_spaces(cmdbuf);
+
+                        if(strcmp(cmdbuf,":w") == 0){
+                            if(strcmp(filename,"[Unnamed File]") == 0){
+                                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+                                isError = 1;
+                            }else{
+                                saveFile(filename,linecount,&f_buf);
+                                hasSaved = 1;
+                            }
+                        } else if(strcmp(cmdbuf,":wq") == 0){
+                            if(strcmp(filename,"[Unnamed File]") != 0){
+                                saveFile(filename,linecount,&f_buf);
+                                quit = 1;
+                                break;
+                            }else{
+                                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+                                isError = 1;
+                            }
+
+                        }else if(strcmp(cmdbuf, ":q")==0){
+                            if(hasSaved || strcmp(filename, "[Unnamed File]") == 0){
+                                quit = 1;
+                                break;
+                            }else{
+                                strcpy(statusBarMsg,"Unsaved changes, try w or q! to quit without saving");
+                                isError = 1;
+                            }
+                        }else if(strcmp(cmdbuf,":q!")==0){
+                            quit = 1;
+                            break;
+                        }   
+                        else if(strncmp(cmdbuf,":saveas ",7) == 0){
+                            char * newname = cmdbuf+8;
+                            strcpy(filename,newname); 
+                        }else{
+                            strcpy(statusBarMsg,"Unknown command \'"); 
+                            strcat(statusBarMsg,cmdbuf);
+                            strcat(statusBarMsg,"\'");
+                            isError = 1;
+                        }
+                    }
+                    memset(cmdbuf,'\0',sizeof(cmdbuf));
+                    cmdi = 0;
+                    cRow = oldRow;
+                    cCol = oldCol;
+                    movecurs(cRow,cCol);
+                    hidecursor();
+                    break;
+                default:
+                ;
             }
-            goto movement;
-          }else if(ch == 'd'){
-            if(linecount == 1) {
-              char * newline = (char *)malloc(sizeof(char));
-              newline[0] = '\0';
-              void * oldline = f_buf[0];
-              f_buf[0] = newline;
-              free(oldline);
-            }else{
-              char * removed_line = remove_line(&f_buf,yStart+cRow-yOffset,&linecount);
-              if(yStart+cRow-yOffset == linecount) smart_moveup(cRow,&yStart,yOffset);
-            }
-            update_made = 1;
-          }else if(ch == 'w'){
-            if(mimic_vim_w(&f_buf, &yStart, &xStart,&cRow, &cCol, yOffset, xOffset,rend_WIDTH))
-              update_made = 1;
-          }else if(ch == 'b'){
-            if(mimic_vim_b(&f_buf, &yStart, &xStart,&cRow, &cCol, yOffset, xOffset,rend_WIDTH))
-              update_made = 1;
-          }else if(ch == 'a'){
-              smart_moveright2_insert(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-              get_cursor_pos(&cRow,&cCol);
-              updateMode('i',&mode); 
-              update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
-              goto end_frame;
-          }else if(ch == 'x'){
-              remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset,xStart+cCol-xOffset); 
-              update_made = 1;
-          }else if(ch == 's'){  
-              remove_from_line(f_buf,f_buf[yStart+cRow-yOffset],yStart+cRow-yOffset,xStart+cCol-xOffset); 
-              update_made = 1;
-              updateMode('i',&mode); 
-              update_statusbad("",WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
-              goto end_frame;
-          }else if(ch == 'f'){
-          /*
-              smart_moveright2(cCol, &xStart, xOffset,strlen(f_buf[cRow+yStart-yOffset]),rend_WIDTH);
-              get_cursor_pos(&cRow,&cCol);
-              while(f_buf[yStart+cRow-yOffset][xStart+cCol-xOffset]
-          */
-          }else if(ch == ':'){
-
-            size_t oldRow = cRow;
-            size_t oldCol = cCol;
-            
-            cmdbuf[cmdi] = ch;
-            update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
-            showcursor();
-            movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
-            cmdi++;
-            char buf[8];
-            int nocheck = 0;
-            while((bytes_read = read(STDIN_FILENO,buf,sizeof(buf))) != -1){
-              if(buf[0] == '\n') break;
-              if(buf[0] == '\033') {nocheck = 1; break;}
-              if(buf[0] == '\t') continue;
-
-              if((short)buf[0] == 127){
-                cmdbuf[cmdi-1] = '\0';
-                cmdi--;
-                if(cmdi == 0) break;
-              }else{
-                cmdbuf[cmdi] = buf[0];
-                cmdi++;
-              }
-              update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
-              movecurs(rend_HEIGHT+yOffset+1,(int)strlen(cmdbuf)+1);
-            }   
-            if(!nocheck){ 
-              size_t cmd_length = strlen(cmdbuf);
-              trim_trailing_spaces(cmdbuf);
-
-              if(strcmp(cmdbuf,":w") == 0){
-                if(strcmp(filename,"[Unnamed File]") == 0){
-                  strcpy(statusBarMsg,"Unnamed file, try :saveas");
-                  isError = 1;
-                }else{
-                  saveFile(filename,linecount,&f_buf);
-                  hasSaved = 1;
-                }
-              } else if(strcmp(cmdbuf,":wq") == 0){
-                if(strcmp(filename,"[Unnamed File]") != 0){
-                  saveFile(filename,linecount,&f_buf);
-                  break;
-                }else{
-                  strcpy(statusBarMsg,"Unnamed file, try :saveas");
-                  isError = 1;
-                }
-
-              }else if(strcmp(cmdbuf, ":q")==0){
-
-                if(hasSaved || strcmp(filename, "[Unnamed File]") == 0){
-                  break;
-                }else{
-                  strcpy(statusBarMsg,"Unsaved changes, try w or q! to quit without saving");
-                  isError = 1;
-                }
-              }else if(strcmp(cmdbuf,":q!")==0){
-                break;
-              }   
-              else if(strncmp(cmdbuf,":saveas ",7) == 0){
-                char * newname = cmdbuf+8;
-                strcpy(filename,newname); 
-              }else{
-                strcpy(statusBarMsg,"Unknown command \'"); 
-                strcat(statusBarMsg,cmdbuf);
-                strcat(statusBarMsg,"\'");
-                isError = 1;
-              }
-            }
-            memset(cmdbuf,'\0',sizeof(cmdbuf));
-            cmdi = 0;
-            cRow = oldRow;
-            cCol = oldCol;
-            movecurs(cRow,cCol);
-            hidecursor();
-          }else{
-            ;
-          }
         }
+        if(quit)break;
+
 
         if (ch == '\033'){
             if(input_buffer[1] == '['){
@@ -429,7 +504,7 @@ int main(int argc, char ** argv){
                 }
                 smart_movedown(cRow,&yStart,1,linecount,rend_HEIGHT);
                 get_cursor_pos(&cRow,&cCol);
-                create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
+             //   create_window_inoutRANGE(xCorner,yCorner,rend_HEIGHT,rend_WIDTH,f_buf,yStart,(xStart=0),linecount,colors);
                 movecurs(cRow,xOffset);
             }else{
 

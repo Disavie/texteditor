@@ -90,3 +90,15 @@ can now delete line 0 and can hit 'q' more smoothly <br />
 next commit, add oO and fF <br />
 .
 
+commit #14 <br />
+added fF oO <br />
+reformatted normal mode controls for readability <br />
+ADD :e next commit <br />
+ADD \t next commit <br />
+ADD CTRL+U and CTRL+D and zz next commit <br />
+start work on a proper system for doing things like dw 2j 5k dfn etc etc <br />
+
+
+
+
+
