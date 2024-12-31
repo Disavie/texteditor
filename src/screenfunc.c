@@ -19,20 +19,20 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
 
     // Define the ASCII art lines
     const char *art[] = {
-        "                         Zep v0.0.15",
-        "               Open source, ANSI-code text editor",
+        "             Zep v0.0.16",
+        "  Open Source Terminal Text Editor",
         "",
-        "                     @@PMTTTTTTTT]@@@@M",
-        "                    j@          g@@@P",
-        "                    ?`        ,@@@@M",
-        "                             g@@@P",
-        "                           ,@@@@|",
-        "                     TTTTT$@@@MTTTTTTT",
-        "                        ,@@@@\"",
-        "                       g@@@M",
-        "                     ,@@@@T           ,E",
-        "                    @@@@E            y@",
-        "                  y@@@@mmmmmmmmmmm@@@@@",
+        "         @@PMTTTTTTTT]@@@@M",
+        "        j@          g@@@P",
+        "        ?`        ,@@@@M",
+        "                 g@@@P",
+        "               ,@@@@|",
+        "         TTTTT$@@@MTTTTTTT",
+        "            ,@@@@\"",
+        "           g@@@M",
+        "         ,@@@@T           ,E",
+        "        @@@@E            y@",
+        "      y@@@@mmmmmmmmmmm@@@@@",
     };
 
     int art_height = sizeof(art) / sizeof(art[0]);
@@ -47,7 +47,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
     }
 
     // Calculate xOffset and yOffset
-    int xOffset = (WIDTH - art_width) / 2;
+    int xOffset = (WIDTH - art_width) / 2 + 2;
     int yOffset = (HEIGHT - art_height) / 2;
 
     // Print the ASCII art with the offsets
@@ -230,7 +230,6 @@ void update_statusbad(char * words,int widith, int height, char ** modes, char m
       }else{
         strcpy(text,words);
       }
-    logLine("\nwrote:");logLine(words);
       movecurs(height+yOffset+1,0);
       drawStatusBar(text,widith,colors,isError);
       movecurs(cRow,cCol);

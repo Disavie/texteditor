@@ -105,6 +105,9 @@ bug fixes <br />
 added :e <br>
 reformatted some things <br />
 ADD \t CTRL U CTRL D and zz <br />
-penis
 
+commit #16 <br />
+small bug fixes <br />
+add \t CTRL U CTRL D and zz next commit <br />
+going to do a big overhaul of the structuring to allow for easier maintenence and better runtime <br />
 

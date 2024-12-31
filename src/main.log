@@ -20,8 +20,7 @@ read line 	    setBgColor(colors[2]);
 read line 	
 read line 	    // Define the ASCII art lines
 read line 	    const char *art[] = {
-read line 	        "                         Zep v0.0.14",
-read line 	        "               Open source, ANSI-code text editor",
+read line 	        "                         Zep v0.0.15",
 read line 	        "",
 read line 	        "                     @@PMTTTTTTTT]@@@@M",
 read line 	        "                    j@          g@@@P",
@@ -264,6 +263,116 @@ wrote:
 wrote:
 wrote:
 wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:_____REMOVEFROMLINE_____
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:_____REMOVEFROMLINE_____
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:
+wrote:cmdbuf is ::
+wrote::
+wrote::w
 wrote:cmdbuf is ::
 wrote::
 wrote::w

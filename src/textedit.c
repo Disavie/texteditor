@@ -5,11 +5,13 @@
 
 int main(int argc, char ** argv){
     openAltBuffer();
-    clearLog();
 
     struct termios oldtermios;
     set_input_mode(&oldtermios);
     setbuf(stdout,NULL);
+    signal(SIGINT,handle_signal);
+    signal(SIGTSTP,handle_signal);
+    signal(SIGQUIT,handle_signal);
 
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -244,7 +246,7 @@ int main(int argc, char ** argv){
                     break;
                 case 21:
 
-                    logLine("you pressed CTRL+U");
+                    //logLine("you pressed CTRL+U");
 
                     break;
                 case ':':
@@ -253,7 +255,6 @@ int main(int argc, char ** argv){
                     size_t oldCol = cCol;
 
                     cmdbuf[cmdi] = ch;
-                    logLine("cmdbuf is :");logLine(cmdbuf);
                     update_statusbad(cmdbuf,WIDTH,rend_HEIGHT,modes,mode,cRow,cCol,yOffset,filename,colors,isError);
                     showcursor();
                     movecurs(rend_HEIGHT+yOffset+1,2);
@@ -434,18 +435,14 @@ int main(int argc, char ** argv){
                         char * aboveline = f_buf[yStart+cRow-yOffset]; 
                         size_t alen = strlen(aboveline);
                         size_t rlen = strlen(removed_line);
-                        logNum(rlen);
                         char * newabove= (char *)realloc(aboveline,(alen+rlen+1)*sizeof(char));
-                        logLine("realloc passed");   
                         aboveline = newabove;
                         f_buf[yStart+cRow-yOffset] = aboveline;
                         char * o = strcat(aboveline,removed_line);
                         free(removed_line);
                     }else ;
-                    logLine("done removing");
                 }else{
                     if(xStart+cCol-xOffset == 0 && yStart+cRow-yOffset == 0) continue;
-                    logLine("_____REMOVEFROMLINE_____");
                     char * line = f_buf[yStart+cRow-yOffset];
                     char * ret = remove_from_line(f_buf,line,yStart+cRow-yOffset,xStart+cCol-xOffset-1);
                     smart_moveleft(cCol,&xStart,xOffset);
@@ -464,7 +461,6 @@ int main(int argc, char ** argv){
                     char newl[strlen(copied_line)+1];
                     strcpy(newl,copied_line);
                     newl[strlen(copied_line)+1] = '\0';
-                    logLine(newl);
 
                     //Reduce size of old line
                     char * shortened_line = (char *)realloc(line,(copy_start)*sizeof(char)); 

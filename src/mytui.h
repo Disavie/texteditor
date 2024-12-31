@@ -17,7 +17,10 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <ctype.h>
+#include <signal.h>
 
+//stop CTRL+C/X/\ from killing
+void handle_signal(int d);
 
 
 //ALWAYS LOGS TO A FILE CALLED main.log

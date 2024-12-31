@@ -2,6 +2,11 @@
 #include "ansihelpers.h"
 #include "mytui.h"
 
+void handle_signal(int d){
+    ;
+}
+
+
 
 void loadFile(char *** dest,char * filename,size_t * linecount, size_t * longestLine, size_t * szHelper,size_t HEIGHT){
 
@@ -32,7 +37,6 @@ void loadFile(char *** dest,char * filename,size_t * linecount, size_t * longest
         strcpy(f_buf[i],line);
         if(f_buf[i][len-1] == '\n')
             f_buf[i][len-1] = '\0';
-        logLine("\nread line \t");logLine(f_buf[i]);
         i++;
     }
     fclose(f);
@@ -42,7 +46,6 @@ void createFile(char *** dest,char * filename,size_t * linecount, size_t * longe
     if(strcmp(filename,"") == 0){
         strcpy(filename,"[Unnamed File]");
     }
-    logLine("in here");
 
     *linecount = 1;
     *longestLine = 0;
@@ -50,7 +53,6 @@ void createFile(char *** dest,char * filename,size_t * linecount, size_t * longe
     char ** buf = (char **)malloc((*szHelper)*sizeof(char *));
     buf[0] = (char *)malloc(sizeof(char));
     buf[0][0] = '\0';
-    logLine("did the thing\n");
     *dest = buf;
     
 }
