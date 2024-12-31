@@ -2,9 +2,11 @@ shitty terminal based text editor that uses basically only ANSI escape codes to 
 
 planned features: <br />
 
---add modal mode <br />
---add status bar displaying some info like current file and line count <br />
---add command bar for VERY basic vim commands (ex w wq q e) <br />
+--made status bar display current line # and character # <br />
+--ADD CTRL+D CTRL+U CTRL+V <br />
+--add proper \t support <br />
+--**reoraganize the buffer rendering into a struct **<br />
+  -struct Buffer with char **, ypos, xpos, etc <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
 --this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
