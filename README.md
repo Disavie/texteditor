@@ -2,10 +2,12 @@ shitty terminal based text editor that uses basically only ANSI escape codes to 
 
 planned features: <br />
 
+FIX THE FILENAME NOT WORKING CORRECTLY, MALLOC dest->filename INSTEAD OF STRCPY IT
 --made status bar display current line # and character # <br />
 --ADD CTRL+D CTRL+U CTRL+V <br />
 --add proper \t support <br />
 --**reoraganize the buffer rendering into a struct **<br />
+  -works sort of... can do further restructuring but this is a pretty good start <br />
   -struct Buffer with char **, ypos, xpos, etc <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
@@ -113,3 +115,16 @@ small bug fixes <br />
 add \t CTRL U CTRL D and zz next commit <br />
 going to do a big overhaul of the structuring to allow for easier maintenence and better runtime <br />
 
+
+change #17 <br />
+working on adding syntax highlighting <br />
+working on cleaning up code... not going so well.. <br />
+weird behavior when cursor is at ends of line <br />
+
+commit #18 <br />
+big changes to code structuring to allow for better scaling <br />
+slight changes to scrolling, now happens with a padding <br />
+no more borders <br />
+i forgot to add padding when scrolling in -x direction oops <br />
+also it seems like there is more flickering that there used to be ? not sure why.. <br />
+only seems to happen when typing too quickly <br />

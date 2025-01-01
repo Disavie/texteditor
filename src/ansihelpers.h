@@ -16,6 +16,5 @@
 #define setTextColor(color) printf("\033[38;5;%dm",color);
 #define setBgColor(color) printf("\033[48;5;%dm",color);
 #define resetColor() printf("\033[0m");
-#define movecurs(row, col){ printf("\033[%d;%dH",row,col);}
-
+#define movecurs(row, col){ printf("\033[%lu;%luH",row,col);}
 #endif
