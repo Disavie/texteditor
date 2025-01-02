@@ -34,11 +34,12 @@ void set_input_mode(struct termios *old_termios); //gets raw terminal input with
 void restore_input_mode(struct termios *old_termios); //resets to needing to hit return and echos input
 int get_terminal_size(int *rows, int *cols) ;
 
+char* size_t_to_string(size_t num) ;
 double get_time_ms();
 size_t countLines(FILE * f);
 
 // --DRAWING TO SCREEN FUNCTIONS --
-void drawLogo(int HEIGHT,int WIDTH, short color[]);
+void drawLogo(int HEIGHT,int WIDTH, const short color[]);
 
 
 

@@ -3,6 +3,7 @@
 #include "Buffer.h"
 #include "cursor.h"
 #include "ansihelpers.h"
+#include "colorscheme.h"
 
 int main(int argc, char ** argv){
     openAltBuffer();
@@ -23,22 +24,22 @@ int main(int argc, char ** argv){
 
     int hasSaved = 1;
     char filename[32]; 
-    Buffer mBuf;
-    mBuf.yoffset = mBuf.xoffset = 0;
+    Buffer mBuf = {
+        .filename = NULL,
+        .contents = NULL,
+        .xoffset = 7,
+        .yoffset = 0,
+        .ypos = 0,
+        .xpos = 0,
+    };
 
     if(argc > 1){
-        strcpy(filename,argv[1]);
-        mBuf.filename = argv[1];
-        loadFile(&mBuf,filename);
+        loadFile(&mBuf,argv[1]);
     }else{
-        strcpy(filename,"");
-        mBuf.filename = "[Unnamed File]";
-        createFile(&mBuf,"");
+        createFile(&mBuf,NULL);
     }
-    mBuf.xoffset = 7;
-    mBuf.yoffset = 0;
 
-    short STATUSBARHEIGHT = 1;
+    short STATUSBARHEIGHT = 2;
     char statusBarMsg[128] = "";
     size_t cy = mBuf.yoffset+1;
     size_t cx = mBuf.xoffset;
@@ -46,23 +47,18 @@ int main(int argc, char ** argv){
     char ch = '\0';
     char mode = 'n'; 
 
-    short text_color = 195;
-    short bg_file_color = 236;
-    short bg_unused_color = 235; 
-    short comment_color = 242;
-    short border_color = text_color; 
-    short error_color = 161;
-    short colors[] = {text_color,bg_file_color,bg_unused_color,comment_color,border_color,error_color};
+    const short * colors = gptcolors2;
 
     char temp[128];
     char * modes[32] = {"--NORMAL--", "--INSERT--"};
-    strcpy(temp," ");strcat(temp,modes[0]);strcat(temp,"    ");strcat(temp,mBuf.filename);
     
+    short isError = 0;
     short WINHEIGHT = HEIGHT - STATUSBARHEIGHT;
     short WINWIDTH = WIDTH;
 
     drawbuffer(mBuf.yoffset,mBuf.xoffset,WINHEIGHT,WINWIDTH,&mBuf,colors);
-    drawStatusBar(temp,WIDTH,colors,0);
+    movecurs(cy,cx);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
     if(argc == 1){movecurs((mBuf.linecount),(size_t)0); drawLogo(HEIGHT,WIDTH, colors); }
     movecurs(cy,cx);
     showcursor();
@@ -77,7 +73,6 @@ int main(int argc, char ** argv){
     char cmdbuf[128];
     memset(cmdbuf,'\0',sizeof(cmdbuf));
     short cmdi = 0;
-    short isError = 0;
 
     int quit = 0;
 
@@ -88,14 +83,14 @@ int main(int argc, char ** argv){
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         WIDTH = w.ws_col;
         HEIGHT = w.ws_row;
-        WINHEIGHT = HEIGHT;
+        WINHEIGHT = HEIGHT - STATUSBARHEIGHT;
         WINWIDTH = WIDTH; 
 
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
 
         if(updateMode(ch,&mode)){ 
-          update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+            update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
           continue;
         }
         
@@ -138,7 +133,7 @@ int main(int argc, char ** argv){
                     smart_moveright_i(&mBuf,cx,strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH);
                     get_cursor_pos(&cy,&cx);
                     updateMode('i',&mode); 
-                    update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'x':
                     remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
@@ -148,7 +143,7 @@ int main(int argc, char ** argv){
                     remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
                     update_made = 1;
                     updateMode('i',&mode); 
-                    update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'o':
                     ;    
@@ -159,7 +154,7 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode); 
-                    update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'O':
                     ;    
@@ -169,7 +164,7 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode); 
-                    update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'f':
                     ;
@@ -233,7 +228,7 @@ int main(int argc, char ** argv){
                     size_t oldCol = cx;
 
                     cmdbuf[cmdi] = ch;
-                    update_statusbar(cmdbuf,HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar(cmdbuf,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     showcursor();
                     movecurs((size_t)HEIGHT+mBuf.yoffset+1,(size_t)2);
                     cmdi++;
@@ -252,22 +247,22 @@ int main(int argc, char ** argv){
                             cmdbuf[cmdi] = buf[0];
                             cmdi++;
                         }
-                        update_statusbar(cmdbuf,HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
-                        movecurs((size_t)WINHEIGHT+mBuf.yoffset+1,strlen(cmdbuf)+1);
+                        update_statusbar(cmdbuf,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,oldRow,oldCol);
+                        movecurs((size_t)WINHEIGHT+STATUSBARHEIGHT,strlen(cmdbuf)+1);
                     }   
                     if(!nocheck){ 
                         trim_trailing_spaces(cmdbuf);
 
                         if(strcmp(cmdbuf,":w") == 0){
-                            if(strcmp(filename,"[Unnamed File]") == 0){
+                            if(mBuf.filename == NULL){
                                 strcpy(statusBarMsg,"Unnamed file, try :saveas");
                                 isError = 1;
                             }else{
                                 saveFile(&mBuf);
                                 hasSaved = 1;
                             }
-                        } else if(strcmp(cmdbuf,":wq") == 0){
-                            if(strcmp(filename,"[Unnamed File]") != 0){
+                        } else if(strcmp(cmdbuf,":wq")== 0){
+                            if(mBuf.filename != NULL){
                                 saveFile(&mBuf);
                                 quit = 1;
                                 break;
@@ -277,7 +272,7 @@ int main(int argc, char ** argv){
                             }
 
                         }else if(strcmp(cmdbuf, ":q")==0){
-                            if(hasSaved || strcmp(filename, "[Unnamed File]") == 0){
+                            if(hasSaved || mBuf.filename == NULL){
                                 quit = 1;
                                 break;
                             }else{
@@ -292,17 +287,26 @@ int main(int argc, char ** argv){
                             char * newname = cmdbuf+8;
                             saveFile(&mBuf);
                             hasSaved = 1;
-                            strcpy(filename,newname); 
+                            char * oldfilename = mBuf.filename;
+                            char * new = (char *)malloc(strlen(newname)*sizeof(char));
+                            strcpy(new,newname);
+                            mBuf.filename = new;
+                            if(oldfilename != NULL) free(oldfilename);
+
                         }else if(strncmp(cmdbuf,":e!",3) == 0){
                             char * newname = cmdbuf+4;
-                            strcpy(filename,newname);
-                            loadFile(&mBuf,filename);
+                            loadFile(&mBuf,newname);
+                            oldRow = 1;
+                            oldCol = mBuf.xoffset;
                             update_made = 1;
                         }else if(strncmp(cmdbuf,":e",2) == 0){
                             if(hasSaved){
                                 char * newname = cmdbuf+3;
                                 strcpy(filename,newname);
                                 loadFile(&mBuf,filename);
+                                oldRow = 1;
+                                oldCol = mBuf.xoffset;
+
                             }else{
                                 strcpy(statusBarMsg,"Unsaved changes, try :w or :e! to edit without saving");
                                 isError=1;
@@ -332,7 +336,7 @@ int main(int argc, char ** argv){
             if(input_buffer[1] == '\0'){
 
                 mode = 'n'; 
-                update_statusbar("",HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
 
                 if(mBuf.xpos+cx-mBuf.xoffset == strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])){
                     smart_moveleft(&mBuf,cx);
@@ -430,7 +434,7 @@ int main(int argc, char ** argv){
         }
 
 
-        update_statusbar(statusBarMsg,HEIGHT,WIDTH,modes,mode,&mBuf,colors,isError);
+    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
         strcpy(statusBarMsg,"");
         memset(input_buffer,'\0',sizeof(input_buffer));
         snapCursorLeft(&mBuf,&cy,&cx,WINHEIGHT,WINWIDTH,colors);

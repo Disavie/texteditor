@@ -62,7 +62,7 @@ int snap_left(Buffer * buf, size_t* cy, size_t * cx){
     return status;
 }
 
-void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,short colors[]){
+void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,const short colors[]){
 
 
     char * line = buf->contents[-1+(*cy)+(buf->ypos)-buf->yoffset];
@@ -80,7 +80,7 @@ void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short 
 
 }
 
-void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short width,short colors[]){
+void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short width,const short colors[]){
 
     if(!snap_left(buf, cy, cx)){
         get_cursor_pos(cy,cx);
@@ -127,12 +127,16 @@ int smart_movedown(Buffer * buf,size_t cy,int flag, int height){
 }
 int smart_moveleft(Buffer * buf,size_t cx){
 
-    if(cx > buf->xoffset){
-        moveleft(); 
-        return 0;
+    int padx = 4;
+    if(buf->xpos == 0 && cx > buf->xoffset){
+        moveleft();
     }else if(buf->xpos != 0){
-        buf->xpos--;
-        return 1;
+        if(cx-1-padx > buf->xoffset){
+            moveleft();
+        }else{
+            buf->xpos--;
+            return 1;
+        }
     }
     return 2;
 

@@ -6,8 +6,8 @@
 int get_cursor_pos(size_t* row, size_t* col);
 
 int snap_left(Buffer * buf, size_t* cy, size_t * cx);
-void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short width,short colors[]);
-void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,short colors[]);
+void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short width,const short colors[]);
+void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,const short colors[]);
 
 int smart_moveup(Buffer * buf,size_t cy );
 int smart_movedown(Buffer * buf,size_t cy,int flag, int height);

@@ -8,12 +8,18 @@ void loadFile(Buffer * dest, char * filename){
     if ( f == NULL ){
         createFile(dest ,filename);
     }else{
+
+        char * oldname = dest->filename;
+        dest->filename = malloc(strlen(filename)*sizeof(char));
         strcpy(dest->filename,filename);
-        dest->filename = filename;
+        if(oldname != NULL) free(oldname);
+
         dest->linecount = countLines(f);
-        dest->ypos = 0;
-        dest->xpos = 0;
-        dest->contents = (char **)malloc((dest->linecount)*sizeof(char *));
+
+        char ** oldcontents = dest->contents;
+        char ** newcontents = (char **)malloc((dest->linecount)*sizeof(char *));
+        dest->contents = newcontents;
+        if(oldcontents != NULL) free(oldcontents);
         
         int i = 0;
         while(!feof(f) && i < (*dest).linecount) {
@@ -40,8 +46,16 @@ void createFile(Buffer * dest,char * filename){
     dest->contents = (char **)malloc(1*sizeof(char *));
     dest->contents[0] = (char *)malloc(sizeof(char));
     dest->contents[0][0] = '\0';
+     
+    if(filename != NULL){
+        char * oldname = dest->filename;
+        dest->filename = (char *)malloc(strlen(filename)*sizeof(char));
+        strcpy(dest->filename,filename);
+        if(oldname != NULL) free(oldname);
 
-    
+    }else{
+        dest->filename = NULL;
+    }
 }
 
 int saveFile(Buffer * file){
@@ -134,7 +148,7 @@ char * remove_from_line(Buffer * buf, size_t row, size_t index) {
 
     return line;
 }
-void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, short colors[]) {
+void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, const short colors[]) {
     win_width -= 6; // Done so that you can see line numbers
 
     setlocale(LC_CTYPE, "");
@@ -170,7 +184,7 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
             setBgColor(bg_unused_color);
             printf("    ~ "); // Indicate unused lines
             end = 1;
-        } else {
+        }else{
             setBgColor(bg_file_color);
             printf("%5d ", row + 1); // Print line number (1-based index)
         }
@@ -196,12 +210,7 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
 }
 
 
-void drawStatusBar(char * text,  int width , short colors[],short isError){
-
-  setTextColor(colors[2]);
-  if(isError) setTextColor(colors[5]);
-  setBgColor(colors[0]);
-
+void drawStatusBar(char * text,  int width ){
 
   int i = 0;
   while( i < width ){
@@ -217,28 +226,53 @@ void drawStatusBar(char * text,  int width , short colors[],short isError){
 }
 
 
-void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,short colors[],short isError){
+void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,const short colors[],short isError, size_t cy, size_t cx){
 
     hidecursor();
-    size_t tmp1, tmp2;
-    get_cursor_pos(&tmp1,&tmp2);
 
     char text[width];
+    memset(text,'\0',sizeof(text));
+
     strcpy(text," ");
 
     if(words[0] == '\0'){
+        setTextColor(colors[8]);
         if(mode == 'n')
             strcat(text,modes[0]);
         else if(mode == 'i')
             strcat(text,modes[1]);
-        strcat(text,"    ");
-        strcat(text,buf->filename);;
     }else{
+        setTextColor(colors[0]);
         strcpy(text,words);
     }
+
+    if(isError)
+        setTextColor(colors[5]);
+
+    setBgColor(colors[2]);
     movecurs((size_t)ypos,(size_t)0);
-    drawStatusBar(text,width,colors,isError);
-    movecurs(tmp1,tmp2);
+    drawStatusBar(text,width);
+    
+
+    setBgColor(colors[6]);
+    setTextColor(colors[7]);
+    char text2[width];
+    if(buf->filename == NULL){
+        strcpy(text2,"[Unnamed File]");
+    }else{
+        strcpy(text2,buf->filename);
+    }
+    strcat(text2,"    ");
+    char * s = size_t_to_string(cy);
+    strcat(text2,s);
+    strcat(text2,",");
+    s = size_t_to_string(cx-buf->xoffset);
+    strcat(text2,s);
+    movecurs((size_t)ypos-1,(size_t)0);
+    drawStatusBar(text2,width);
+
+
+    movecurs(cy,cx);
     showcursor();
 
 }

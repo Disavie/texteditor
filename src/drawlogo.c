@@ -1,6 +1,5 @@
 #include "mytui.h"
 #include "ansihelpers.h"
-#include "Buffer.h"
 
 
 #include <stdio.h>
@@ -13,14 +12,14 @@ void print_with_offset(const char *line, int xOffset) {
     printf("%s\n", line);
 }
 
-void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
+void drawLogo(int HEIGHT, int WIDTH,const short colors[]) {
 
     setTextColor(colors[0]);
     setBgColor(colors[2]);
 
     // Define the ASCII art lines
     const char *art[] = {
-        "             Zep v0.0.18",
+        "             Zep v0.0.19",
         "  Open Source Terminal Text Editor",
         "",
         "         @@PMTTTTTTTT]@@@@M",
@@ -48,7 +47,7 @@ void drawLogo(int HEIGHT, int WIDTH, short colors[]) {
     }
 
     // Calculate xOffset and yOffset
-    int xOffset = (WIDTH - art_width) / 2 + 2;
+    int xOffset = (WIDTH - art_width) / 2;
     int yOffset = (HEIGHT - art_height) / 2;
 
     // Print the ASCII art with the offsets

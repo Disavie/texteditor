@@ -7,8 +7,6 @@
 int mimic_vim_w(Buffer * buf ,size_t cy, size_t*cx, short width){
 
     int updated = 0;
-    logLine("looking at line:\n");
-    logLine(buf->contents[buf->ypos+cy-buf->yoffset]);
 
     if((*cx)+(buf->xpos)-buf->xoffset >= strlen(buf->contents[(buf->ypos)+(cy)-buf->yoffset])-1) return 0;
     while(buf->contents[(buf->ypos)+(cy)-buf->yoffset][(buf->xpos)+(*cx)-buf->xoffset] != ' '){

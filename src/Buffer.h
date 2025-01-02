@@ -27,9 +27,9 @@ char *remove_line(Buffer * buf, int buf_row) ;
 void loadFile(Buffer * dest,char * filename); 
 void createFile(Buffer * dest,char * filename);
 int saveFile(Buffer * buf);
-void drawbuffer(short starty, short startx, int win_height,int win_width, Buffer * buffer,short colors[]); 
+void drawbuffer(short starty, short startx, int win_height,int win_width, Buffer * buffer,const short colors[]); 
 
-void drawStatusBar(char * text,int width, short colors[],short isError);
-void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,short colors[],short isError);
+void drawStatusBar(char * text,int width);
+void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,const short colors[],short isError, size_t cy, size_t cx);
 
 #endif

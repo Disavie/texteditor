@@ -1,9 +1,11 @@
 shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
+writing this from inside.
+writing this
 
 planned features: <br />
 
 FIX THE FILENAME NOT WORKING CORRECTLY, MALLOC dest->filename INSTEAD OF STRCPY IT
---made status bar display current line # and character # <br />
+
 --ADD CTRL+D CTRL+U CTRL+V <br />
 --add proper \t support <br />
 --**reoraganize the buffer rendering into a struct **<br />
@@ -128,3 +130,13 @@ no more borders <br />
 i forgot to add padding when scrolling in -x direction oops <br />
 also it seems like there is more flickering that there used to be ? not sure why.. <br />
 only seems to happen when typing too quickly <br />
+
+commit #19 <br />
+now has left padding on scroll <br />
+much better colorscheme support <br />
+less flickering on fast typing? <br />
+fixed :w :wq :e :e! :saveas commands <br />
+statusbar is now 2 high, will allow me to display more shit <br />
+is more supportive for adding seperate windows in the future <br />
+restructured some code <br />
+weenor <br />
