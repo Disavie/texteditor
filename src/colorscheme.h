@@ -39,7 +39,7 @@ const short default2[] = {
     COLOR_BLUE_JEAN, //misc keywords
     COLOR_ORANGE_LIGHT, //strings
     COLOR_PURPLE_SOFT_LAVENDER, //preprocessor
-    COLOR_MINT_GREEN2, //NUMBERS
+    COLOR_FADED_GREEN,
 };
 const short gptcolors[] = {
     COLOR_GRAY_20,        // text_color

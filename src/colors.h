@@ -51,6 +51,7 @@ typedef enum {
     COLOR_GREEN_MOSS = 100,
     COLOR_MINT_GREEN = 36,
     COLOR_MINT_GREEN2 = 42,
+    COLOR_FADED_GREEN = 72,
 
     // Blues
     COLOR_BLUE_BRIGHT = 4,

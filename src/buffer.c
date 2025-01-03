@@ -152,19 +152,9 @@ char * remove_from_line(Buffer * buf, size_t row, size_t index) {
 
 void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, const short colors[]) {
 
-
-
     win_width -= 6; // Done so that you can see line numbers
 
-    setlocale(LC_CTYPE, "");
     const char DEF = ' ';
-    wchar_t BLOCK = 0x2588;
-    wchar_t VERTICAL_BORDER = 0x2502;
-    wchar_t HORIZONTAL_BORDER = 0x2500;
-    wchar_t TOPLEFTCORNER = 0x250C;
-    wchar_t TOPRIGHTCORNER = 0x2510;
-    wchar_t BOTTOMLEFTCORNER = 0x2514;
-    wchar_t BOTTOMRIGHTCORNER = 0x2518;
 
     short text_color = colors[0];
     short bg_file_color = colors[1];
@@ -225,69 +215,6 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
     setTextColor(0);
     setBgColor(0);
 }
-/*
-void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, const short colors[]) {
-    win_width -= 6; // Done so that you can see line numbers
-
-    setlocale(LC_CTYPE, "");
-    const char DEF = ' ';
-    wchar_t BLOCK = 0x2588;
-    wchar_t VERTICAL_BORDER = 0x2502;
-    wchar_t HORIZONTAL_BORDER = 0x2500;
-    wchar_t TOPLEFTCORNER = 0x250C;
-    wchar_t TOPRIGHTCORNER = 0x2510;
-    wchar_t BOTTOMLEFTCORNER = 0x2514;
-    wchar_t BOTTOMRIGHTCORNER = 0x2518;
-
-    short text_color = colors[0];
-    short bg_file_color = colors[1];
-    short bg_unused_color = colors[2];
-    short comment_color = colors[3];
-    short border_color = colors[4];
-    short tab_width = 4;
-
-    move00();
-    hidecursor();
-    setBgColor(bg_file_color);
-    setTextColor(text_color);
-
-    int end = 0;
-
-    // Iterate over visible rows
-    for (int row = (int)buffer->ypos; row < buffer->ypos + win_height; row++) {
-        setTextColor(comment_color);
-
-        // Check if the current row is beyond the actual content of the buffer
-        if (row >= buffer->linecount) {
-            setBgColor(bg_unused_color);
-            printf("    ~ "); // Indicate unused lines
-            end = 1;
-        }else{
-            setBgColor(bg_file_color);
-            printf("%5d ", row + 1); // Print line number (1-based index)
-        }
-
-        setTextColor(text_color);
-
-        // Iterate over visible columns for the current row
-        for (int col = (int)buffer->xpos; col < buffer->xpos + win_width; col++) {
-            if (end || row >= buffer->linecount || col >= strlen(buffer->contents[row])) {
-                printf("%c", DEF);
-            } else {
-                char letter = buffer->contents[row][col];
-                printf("%c", letter);
-            }
-        }
-        if(row != buffer->ypos + win_height-1)
-            printf("\n"); // Move to the next line
-    }
-
-    showcursor();
-    setTextColor(0);
-    setBgColor(0);
-}
-*/
-
 
 void drawStatusBar(char * text,  int width ){
 

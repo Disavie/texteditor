@@ -143,3 +143,10 @@ maybe it dynamically set lang syntax by looking at file extension <br />
 going to add :colorscheme command <br />
 still doesnt support hitting tab
 ADD HITTING TAB SUPPORT AND CTRL U CTRL D
+
+change #21 <br />
+minor colorscheme changes <br />
+
+commit #22 <br />
+reduced tearing on scrolling <br />
+
