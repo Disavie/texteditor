@@ -51,6 +51,9 @@ int mimic_vim_b(Buffer * buf ,size_t  cy,size_t *cx, short width);
 
 char updateMode(char inputch, char *mode);
 
+
+char * highlightLine(char *line,const short colors[]);
+
 #endif
 
 

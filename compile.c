@@ -9,6 +9,7 @@ int main(int arc, char ** argv){
     system("gcc src/textedit.c -c -o bin/textedit.o");
     system("gcc src/buffer.c -c -o bin/buffer.o");
     system("gcc src/cursor.c -c -o bin/cursor.o");
+    system("gcc src/lexer.c -c -o bin/lexer.o");
 
     system("gcc bin/*.o -o zep");
 

@@ -110,7 +110,6 @@ char* size_t_to_string(size_t num) {
 
     size_t buffer_size = 64; 
     char *str = (char*)malloc(buffer_size * sizeof(char));
-
     if (str != NULL) {
         snprintf(str, buffer_size, "%zu", num); // Converts size_t to string
     }

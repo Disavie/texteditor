@@ -7,7 +7,7 @@
 
 int main(int argc, char ** argv){
     openAltBuffer();
-   // clearLog();
+    //clearLog();
 
     struct termios oldtermios;
     set_input_mode(&oldtermios);
@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
     char ch = '\0';
     char mode = 'n'; 
 
-    const short * colors = gptcolors2;
+    const short * colors = default1;
 
     char temp[128];
     char * modes[32] = {"--NORMAL--", "--INSERT--"};
@@ -434,7 +434,7 @@ int main(int argc, char ** argv){
         }
 
 
-    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+        update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
         strcpy(statusBarMsg,"");
         memset(input_buffer,'\0',sizeof(input_buffer));
         snapCursorLeft(&mBuf,&cy,&cx,WINHEIGHT,WINWIDTH,colors);
@@ -443,7 +443,11 @@ int main(int argc, char ** argv){
 
     }
 
-    //restore cursor
+    for(int i = 0 ; i < mBuf.linecount ; i++){
+        free(mBuf.contents[i]);
+    }
+    if(mBuf.filename != NULL)
+        free(mBuf.filename);
     resetColor();
     restore_input_mode(&oldtermios);
     closeAltBuffer();

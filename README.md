@@ -4,13 +4,8 @@ writing this
 
 planned features: <br />
 
-FIX THE FILENAME NOT WORKING CORRECTLY, MALLOC dest->filename INSTEAD OF STRCPY IT
-
 --ADD CTRL+D CTRL+U CTRL+V <br />
 --add proper \t support <br />
---**reoraganize the buffer rendering into a struct **<br />
-  -works sort of... can do further restructuring but this is a pretty good start <br />
-  -struct Buffer with char **, ypos, xpos, etc <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
 --this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
@@ -39,7 +34,7 @@ now can scroll horizontally <br />
 
 commit #5 <br />
 NOW IS PROPERLY SPAM PROOF <br />
-there is still some weirdness in the get_curs_pos function where spamming can cause the cursor to fall behind <br />
+there is still some weirdness in the get.curs.pos function where spamming can cause the cursor to fall behind <br />
 color support <br />
 there is also weirdness with rightside horizontal scrolling <br />--mimic common vim motions (ex hjkl wW bB hjkl dd i oO <ESC> f) <br />
 
@@ -140,3 +135,11 @@ statusbar is now 2 high, will allow me to display more shit <br />
 is more supportive for adding seperate windows in the future <br />
 restructured some code <br />
 weenor <br />
+
+commit #20 <br />
+NOW HAS SYNTAX HIGHLIGHTING !!!! <br />
+only support single line comments and C syntax <br />
+maybe it dynamically set lang syntax by looking at file extension <br />
+going to add :colorscheme command <br />
+still doesnt support hitting tab
+ADD HITTING TAB SUPPORT AND CTRL U CTRL D
