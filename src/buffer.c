@@ -1,6 +1,5 @@
 #include "mytui.h"
 #include "Buffer.h"
-#include "cursor.h"
 
 
 void loadFile(Buffer * dest, char * filename){
