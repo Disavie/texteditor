@@ -47,7 +47,7 @@ int main(int argc, char ** argv){
     char ch = '\0';
     char mode = 'n'; 
 
-    const short * colors = default1;
+    const short * colors = default2;
 
     char temp[128];
     char * modes[32] = {"--NORMAL--", "--INSERT--"};
