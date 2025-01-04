@@ -176,3 +176,4 @@ add more commands like "/b" to jump to bottom and "/t" to jump to top <br />
 add ctrl u and ctrl d <br />
 add ctrl f and CTRL F for find and find and replace <br />
 add a /themes? command to list themes in a seperate window... <br />
+

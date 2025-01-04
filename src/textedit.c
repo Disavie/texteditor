@@ -176,7 +176,7 @@ int main(int argc, char ** argv){
 
                     smart_moveright_n(&mBuf,cx,strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH);
                     get_cursor_pos(&cy,&cx);
-                    while(mBuf.xpos+cx-mBuf.xoffset < strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])){
+                    while(mBuf.xpos+cx-mBuf.xoffset < (int)strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])-1){
                         if(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset] == temp){
                             found = 1;
                             break;
@@ -198,14 +198,16 @@ int main(int argc, char ** argv){
                     temp3 = mBuf.xpos;
                     update_made = 1;
 
-                    if(!smart_moveleft(&mBuf,cx))cx--;
+                    smart_moveleft(&mBuf,cx);
+                    get_cursor_pos(&cy,&cx);
 
-                    while((int)mBuf.xpos+(int)cx-(int)mBuf.xoffset > -1){
+                    while((int)(mBuf.xpos)+(int)cx-(int)(mBuf.xoffset) > -1){
                         if(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset] == temp){
                             found = 1;
                             break;
                         }
-                        if(!smart_moveleft(&mBuf,cx))cx--;
+                        smart_moveleft(&mBuf,cx);
+                        get_cursor_pos(&cy,&cx);
                         if(mBuf.xpos+cx-mBuf.xoffset == 0) break;
                     }
                     if(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset] == temp){
@@ -365,6 +367,7 @@ int main(int argc, char ** argv){
                 if(cursorMovement(&mBuf,input_buffer[2],cy,cx,mode,WINHEIGHT, WINWIDTH))
                    update_made = 1;
             }
+            goto end_frame;
         }
 
         if(mode == 'i'){

@@ -153,7 +153,7 @@ int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
         return 1;
     }
 
-    if(buf->xpos +cx- buf->xoffset < length-1){
+    if(buf->xpos +cx- buf->xoffset < length -1){
         moveright();
         return 0;
     }
