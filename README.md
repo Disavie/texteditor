@@ -1,7 +1,28 @@
 shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
 writing this from inside
 will this indent properly? <br />
-writing this <br />
+
+
+
+type '/' to open the command line <br />
+type 'i' to enter insert mode and ESC to exit insert mode <br />
+o = move cursor down and start newline <br />
+O = move cursor up and start new line <br />
+hjkl or arrow keys move cursor <br />
+w to jump foreward until whitespace b to jump backward until whitespace <br />
+x deleted currently character <br />
+a moves cursor right then enters insert mode <br />
+s deletes character and enters insert mode <br />
+f[letter] = find [letter] in line <br />
+F[letter] = find [letter] in line backwards <br />
+
+/theme to change theme <br />
+--themes: default1 default2 default3 default4 deafult5 gptcolors retro_orange retro_green <br />
+/w to save /q to quit /e to edit a file <br />
+
+no copy paste or undo redo yet <br />
+
+
 
 planned features: <br />
 

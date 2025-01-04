@@ -209,10 +209,4 @@ int cursorMovement(Buffer * buf,char key, size_t cy, size_t cx,char mode, int he
             ;
     }
     return 0;
-
-
-
-
-
-
 }

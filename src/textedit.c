@@ -50,7 +50,7 @@ int main(int argc, char ** argv){
 
     char temp[128];
     char * modes[32] = {"--NORMAL--", "--INSERT--"};
-    
+
     short isError = 0;
     short WINHEIGHT = HEIGHT - STATUSBARHEIGHT;
     short WINWIDTH = WIDTH;
@@ -68,7 +68,7 @@ int main(int argc, char ** argv){
     //motion anatomy prefix (d y)
     //count
     //motion type (w f<char> $ ^)
-    
+
     ssize_t bytes_read;
     char cmdbuf[128];
     memset(cmdbuf,'\0',sizeof(cmdbuf));
@@ -91,9 +91,9 @@ int main(int argc, char ** argv){
 
         if(updateMode(ch,&mode)){ 
             update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
-          continue;
+            continue;
         }
-        
+
         if(mode == 'n'){
             switch((int)ch){
                 case 'h':
@@ -133,7 +133,7 @@ int main(int argc, char ** argv){
                     smart_moveright_i(&mBuf,cx,strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH);
                     get_cursor_pos(&cy,&cx);
                     updateMode('i',&mode); 
-    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'x':
                     remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
@@ -347,7 +347,7 @@ int main(int argc, char ** argv){
                     hidecursor();
                     break;
                 default:
-                ;
+                    ;
             }
         }
         if(quit)break;
@@ -365,7 +365,7 @@ int main(int argc, char ** argv){
             }else if(input_buffer[1] == '['){
             movement:
                 if(cursorMovement(&mBuf,input_buffer[2],cy,cx,mode,WINHEIGHT, WINWIDTH))
-                   update_made = 1;
+                    update_made = 1;
             }
             goto end_frame;
         }
@@ -404,7 +404,6 @@ int main(int argc, char ** argv){
                         smart_moveleft(&mBuf,cx);
                         get_cursor_pos(&cy, &cx);
                         while(mBuf.xpos+cx-mBuf.xoffset > 0 && mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset-1] != '\t' && !isalnum(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset-1])){
-                            logLine("\nloop");
                             remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset-1);
                             smart_moveleft(&mBuf,cx);
                             get_cursor_pos(&cy, &cx);
@@ -449,7 +448,7 @@ int main(int argc, char ** argv){
                 smart_movedown(&mBuf,cy,1,WINHEIGHT);
                 get_cursor_pos(&cy,&cx);
                 movecurs(cy,(size_t)mBuf.xoffset);
-                }else if(ch == '\t'){ //\t
+            }else if(ch == '\t'){ //\t
 
                 size_t row = -1+mBuf.ypos+cy-mBuf.yoffset;
                 size_t col = mBuf.xpos+cx-mBuf.xoffset;
@@ -461,7 +460,7 @@ int main(int argc, char ** argv){
                 }
                 insert_to_line(&mBuf,row,col+tabwidth-1,'\t');
                 smart_moveright_i(&mBuf,cx, strlen(mBuf.contents[row]),WINWIDTH); 
-                
+
 
             }else{
 
@@ -472,8 +471,8 @@ int main(int argc, char ** argv){
             update_made = 1;
             hasSaved = 0;
         }
-        
-        end_frame:
+
+    end_frame:
         get_cursor_pos(&cy,&cx);
 
         if(update_made){ 
@@ -503,7 +502,4 @@ int main(int argc, char ** argv){
     showcursor();
     return 0;
 }
-
-
-
 
