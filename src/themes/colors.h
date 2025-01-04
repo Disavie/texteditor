@@ -6,6 +6,7 @@ typedef enum {
     RESET = 0,
 
     // Grayscale (ANSI 232–255)
+    COLOR_BLACK = 16,
     COLOR_GRAY_1 = 232,  // Darkest gray
     COLOR_GRAY_2 = 233,
     COLOR_GRAY_3 = 234,
@@ -30,6 +31,7 @@ typedef enum {
     COLOR_GRAY_22 = 253,
     COLOR_GRAY_23 = 254,
     COLOR_WHITE = 255,  // Brightest white
+    COLOR_WHITE2 = 15,
 
     // Reds
     COLOR_RED_BRIGHT = 1,
@@ -39,6 +41,7 @@ typedef enum {
     COLOR_RED_RUBY = 196,
     COLOR_RED_ROSE = 160,
     COLOR_RED_DARK = 52,
+    COLOR_RED_WASHED_FADED = 167,
 
     // Greens
     COLOR_GREEN_BRIGHT = 2,
@@ -71,6 +74,7 @@ typedef enum {
     COLOR_YELLOW_SUNSHINE = 148,
     COLOR_YELLOW_LEMON = 190,
     COLOR_YELLOW_MUSTARD = 94,
+    COLOR_BARLEY_YELLOW = 229,
 
     // Oranges
     COLOR_ORANGE_BRIGHT = 214,
@@ -78,6 +82,9 @@ typedef enum {
     COLOR_ORANGE_RUST = 202,
     COLOR_ORANGE_TANGERINE = 208,
     COLOR_ORANGE_CARAMEL = 130,
+    COLOR_ORANGE_FADED = 209,
+    COLOR_ORANGE_NEUTRAL = 172,
+    COLOR_TAN2 = 222,
 
     // Purples
     COLOR_PURPLE_BRIGHT = 13,
@@ -88,6 +95,10 @@ typedef enum {
     COLOR_PURPLE_VIOLET = 129,
     COLOR_PURPLE_AMETHYST = 93,
     COLOR_PURPLE_DEEP = 92,
+    
+    //Magenta
+
+    COLOR_MAGENTA = 125,
 
     // Pinks
     COLOR_PINK_LIGHT = 218,
@@ -115,6 +126,7 @@ typedef enum {
 
     // Special and Extended Colors
     COLOR_PEACH = 215,
+    COLOR_PEACH2 = 216,
     COLOR_MAROON = 88,
     COLOR_INDIGO = 54,
     COLOR_TAN = 180,

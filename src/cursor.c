@@ -114,6 +114,8 @@ int smart_moveup(Buffer * buf,size_t cy ){
 
 int smart_movedown(Buffer * buf,size_t cy,int flag, int height){
 
+    int pady = 4;
+
     if(buf->ypos+cy-buf->yoffset < buf->linecount){
         if(cy >= height-4 && (flag || buf->ypos + cy != buf->linecount)){ 
             buf->ypos++;
@@ -143,9 +145,10 @@ int smart_moveleft(Buffer * buf,size_t cx){
 }
 
 int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
+    
+    int padx = 4;
 
-
-    if(cx == width-4 && buf->xpos + cx - buf->xpos < length){
+    if(cx == width-padx && buf->xpos + cx - buf->xpos < length){
         buf->xpos++;
         return 1;
     }
@@ -159,7 +162,9 @@ int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
 
 int smart_moveright_i(Buffer * buf,size_t cx, size_t length,int width){
 
-    if(cx == width - 1 -4 && buf->xpos + cx - buf->xpos < length){
+    int padx = 4;
+
+    if(cx == width - 1 - padx && buf->xpos + cx - buf->xpos < length){
         buf->xpos++;
         return 1;
     }

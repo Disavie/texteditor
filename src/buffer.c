@@ -62,6 +62,14 @@ void createFile(Buffer * dest,char * filename){
     }
 }
 
+void replace_tab(char ** line){
+
+    for(size_t i = 0 ; i < strlen(*line) ; i++){
+        if((*line)[i] == '\t')
+            (*line)[i] = ' ';
+    }
+}
+
 int saveFile(Buffer * file){
 
     FILE * f;
@@ -71,6 +79,8 @@ int saveFile(Buffer * file){
         return 1;
     }else{
         for(int i = 0 ; i < file->linecount; i++){
+            char * line = file->contents[i];
+            replace_tab(&line);
             fprintf(f,"%s\n",file->contents[i]);
         }
         fclose(f);
@@ -217,6 +227,7 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
                 printf("%c", DEF);
             } else {
                 char letter = highlighted_line[col];
+                if(letter == '\t') letter = ' ';
                 printf("%c",letter);
             }
         }
@@ -287,11 +298,11 @@ void update_statusbar(char * words,short ypos, short width, char ** modes, char 
         strcpy(text2,buf->filename);
     }
     strcat(text2,"    ");
-    char * s = size_t_to_string(cy);
+    char * s = size_t_to_string(cy+buf->ypos);
     strcat(text2,s);
     free(s);
     strcat(text2,",");
-    s = size_t_to_string(cx-buf->xoffset);
+    s = size_t_to_string(cx-buf->xoffset+buf->xpos+1);
     strcat(text2,s);
     free(s);
     movecurs((size_t)ypos-1,(size_t)0);

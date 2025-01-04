@@ -1,6 +1,7 @@
 shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
 writing this from inside
-writing this
+will this indent properly? <br />
+writing this <br />
 
 planned features: <br />
 
@@ -9,6 +10,12 @@ planned features: <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
 --this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
+--add CTRL f and CTRL F <br />
+--add ability to search path ei "zep src/textedit.c" and "e: src/textedit.c" <br />
+--valgrind reduce memory leaks <br />
+--add filesize in KB
+--add a keystrokes tracker
+
 
 commit #1 <br />
 FIX THE ERROR OF TWO KEY PRESSES AT ONCE, look up "cannonical terminal input mode"  <br />
@@ -157,3 +164,15 @@ need to add :theme <br />
 highlight substr is off by one right now, i am adjusting by calling it with end-1,, investigate this <br />
 add a :syntax command to quickly change what language i syntax highlight for <br />
 
+commit #24 <br />
+ffinally added /t support <br />
+added :theme, themes are default1 default2 gptcolors <br />
+reoranigzed themes for way better scalability <br />
+
+commit #25 <br />
+added more default themes <br />
+changed the command leader to '/' instead of ':' <br />
+add more commands like "/b" to jump to bottom and "/t" to jump to top <br />
+add ctrl u and ctrl d <br />
+add ctrl f and CTRL F for find and find and replace <br />
+add a /themes? command to list themes in a seperate window... <br />

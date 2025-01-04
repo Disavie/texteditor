@@ -64,6 +64,7 @@ int main(int argc, char ** argv){
 
     char input_buffer[8];
     memset(input_buffer,'\0',sizeof(input_buffer));
+    int tabwidth = 4;
     //motion anatomy prefix (d y)
     //count
     //motion type (w f<char> $ ^)
@@ -142,7 +143,7 @@ int main(int argc, char ** argv){
                     remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
                     update_made = 1;
                     updateMode('i',&mode); 
-    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'o':
                     ;    
@@ -153,7 +154,7 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode); 
-    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'O':
                     ;    
@@ -163,7 +164,7 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode); 
-    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     goto end_frame;
                 case 'f':
                     ;
@@ -221,13 +222,13 @@ int main(int argc, char ** argv){
                     //logLine("you pressed CTRL+U");
 
                     break;
-                case ':':
+                case '/':
                     ;
                     size_t oldRow = cy;
                     size_t oldCol = cx;
 
                     cmdbuf[cmdi] = ch;
-    update_statusbar(cmdbuf,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                    update_statusbar(cmdbuf,HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
                     showcursor();
                     movecurs((size_t)HEIGHT+mBuf.yoffset+1,(size_t)2);
                     cmdi++;
@@ -252,37 +253,37 @@ int main(int argc, char ** argv){
                     if(!nocheck){ 
                         trim_trailing_spaces(cmdbuf);
 
-                        if(strcmp(cmdbuf,":w") == 0){
+                        if(strcmp(cmdbuf,"/w") == 0){
                             if(mBuf.filename == NULL){
-                                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+                                strcpy(statusBarMsg,"Unnamed file, try /saveas");
                                 isError = 1;
                             }else{
                                 saveFile(&mBuf);
                                 hasSaved = 1;
                             }
-                        } else if(strcmp(cmdbuf,":wq")== 0){
+                        } else if(strcmp(cmdbuf,"/wq")== 0){
                             if(mBuf.filename != NULL){
                                 saveFile(&mBuf);
                                 quit = 1;
                                 break;
                             }else{
-                                strcpy(statusBarMsg,"Unnamed file, try :saveas");
+                                strcpy(statusBarMsg,"Unnamed file, try /saveas");
                                 isError = 1;
                             }
 
-                        }else if(strcmp(cmdbuf, ":q")==0){
+                        }else if(strcmp(cmdbuf, "/q")==0){
                             if(hasSaved || mBuf.filename == NULL){
                                 quit = 1;
                                 break;
                             }else{
-                                strcpy(statusBarMsg,"Unsaved changes, try :w or :q! to quit without saving");
+                                strcpy(statusBarMsg,"Unsaved changes, try /w or /q! to quit without saving");
                                 isError = 1;
                             }
-                        }else if(strcmp(cmdbuf,":q!")==0){
+                        }else if(strcmp(cmdbuf,"/q!")==0){
                             quit = 1;
                             break;
                         }   
-                        else if(strncmp(cmdbuf,":saveas ",7) == 0){
+                        else if(strncmp(cmdbuf,"/saveas ",8) == 0){
                             char * newname = cmdbuf+8;
                             saveFile(&mBuf);
                             hasSaved = 1;
@@ -292,13 +293,13 @@ int main(int argc, char ** argv){
                             mBuf.filename = new;
                             if(oldfilename != NULL) free(oldfilename);
 
-                        }else if(strncmp(cmdbuf,":e!",3) == 0){
+                        }else if(strncmp(cmdbuf,"/e! ",4) == 0){
                             char * newname = cmdbuf+4;
                             loadFile(&mBuf,newname);
                             oldRow = 1;
                             oldCol = mBuf.xoffset;
                             update_made = 1;
-                        }else if(strncmp(cmdbuf,":e",2) == 0){
+                        }else if(strncmp(cmdbuf,"/e ",3) == 0){
                             if(hasSaved){
                                 char * newname = cmdbuf+3;
                                 strcpy(filename,newname);
@@ -307,10 +308,28 @@ int main(int argc, char ** argv){
                                 oldCol = mBuf.xoffset;
 
                             }else{
-                                strcpy(statusBarMsg,"Unsaved changes, try :w or :e! to edit without saving");
+                                strcpy(statusBarMsg,"Unsaved changes, try /w or /e! to edit without saving");
                                 isError=1;
                             }
                             update_made = 1;
+                        }else if(strncmp(cmdbuf, "/theme ",7) == 0){
+                            char * newtheme = cmdbuf+7; 
+                            int changed = 0;
+                            for(int i = 0 ; i < zthemecount ; i++) {
+                                if(strcmp(newtheme,zthemes[i].name) == 0){
+                                    colors = zthemes[i].data;
+                                    changed = 1;
+                                    update_made = 1;
+                                    break;
+                                }
+                            }
+                            if(!changed){
+                                strcpy(statusBarMsg,"Unknown theme \'");
+                                strcat(statusBarMsg,newtheme);
+                                strcat(statusBarMsg,"\'");
+                                isError = 1; 
+                            }
+
                         }else{
                             strcpy(statusBarMsg,"Unknown command \'"); 
                             strcat(statusBarMsg,cmdbuf);
@@ -335,7 +354,7 @@ int main(int argc, char ** argv){
             if(input_buffer[1] == '\0'){
 
                 mode = 'n'; 
-    update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
+                update_statusbar("",HEIGHT,WINWIDTH,modes,mode,&mBuf,colors,isError,cy,cx);
 
                 if(mBuf.xpos+cx-mBuf.xoffset == strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])){
                     smart_moveleft(&mBuf,cx);
@@ -374,8 +393,23 @@ int main(int argc, char ** argv){
                     }else ;
                 }else{
                     if(mBuf.xpos+cx-mBuf.xoffset== 0 && -1+mBuf.ypos+cy-mBuf.yoffset == 0) continue;
-                    remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset-1);
-                    smart_moveleft(&mBuf,cx);
+                    size_t row = -1+mBuf.ypos+cy-mBuf.yoffset;
+                    int col = mBuf.xpos+cx-mBuf.xoffset;
+                    if(mBuf.contents[row][col-1] == '\t'){
+
+                        remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,col-1);
+                        smart_moveleft(&mBuf,cx);
+                        get_cursor_pos(&cy, &cx);
+                        while(mBuf.xpos+cx-mBuf.xoffset > 0 && mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset-1] != '\t' && !isalnum(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset-1])){
+                            logLine("\nloop");
+                            remove_from_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset-1);
+                            smart_moveleft(&mBuf,cx);
+                            get_cursor_pos(&cy, &cx);
+                        }
+                    }else{
+                        remove_from_line(&mBuf,row,col-1);
+                        smart_moveleft(&mBuf,cx);
+                    }
                 }
             }else if(ascii_ch == 10){ // '\n'
 
@@ -412,11 +446,24 @@ int main(int argc, char ** argv){
                 smart_movedown(&mBuf,cy,1,WINHEIGHT);
                 get_cursor_pos(&cy,&cx);
                 movecurs(cy,(size_t)mBuf.xoffset);
+                }else if(ch == '\t'){ //\t
+
+                size_t row = -1+mBuf.ypos+cy-mBuf.yoffset;
+                size_t col = mBuf.xpos+cx-mBuf.xoffset;
+
+                for(int i = 0 ; i < tabwidth-1 ; i++){
+
+                    insert_to_line(&mBuf,row,col,' ');
+                    smart_moveright_i(&mBuf,cx, strlen(mBuf.contents[row]),WINWIDTH); 
+                }
+                insert_to_line(&mBuf,row,col+tabwidth-1,'\t');
+                smart_moveright_i(&mBuf,cx, strlen(mBuf.contents[row]),WINWIDTH); 
+                
+
             }else{
 
                 insert_to_line(&mBuf,-1+mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset,ch);
-                if(mode == 'i') smart_moveright_i(&mBuf,cx, strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH); 
-                else smart_moveright_n(&mBuf,cx, strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH); 
+                smart_moveright_i(&mBuf,cx, strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH); 
 
             }
             update_made = 1;
