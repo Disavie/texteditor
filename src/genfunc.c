@@ -117,3 +117,27 @@ char* size_t_to_string(size_t num) {
     return str;
 }
 
+char * substr(char * line, size_t start, size_t end){
+
+    if(end > strlen(line))
+        end = strlen(line);
+
+    if(start > end)
+        return NULL;
+
+    size_t len = end-start;
+    char * out = (char *)malloc((len+1)*sizeof(char));
+    strncpy(out,line+start,len);
+    out[len] = '\0';
+    return out;
+
+}
+
+
+char * substr_2(char * start, size_t len){
+    char * out = (char *)malloc((len+1)*sizeof(char));
+    strncpy(out,start,len);
+    out[len] = '\0';
+    return out;
+
+}

@@ -19,7 +19,9 @@ void loadFile(Buffer * dest, char * filename){
         char ** oldcontents = dest->contents;
         char ** newcontents = (char **)malloc((dest->linecount)*sizeof(char *));
         dest->contents = newcontents;
-        if(oldcontents != NULL) free(oldcontents);
+        if(oldcontents != NULL) {
+            free(oldcontents);
+        }
         
         int i = 0;
         while(!feof(f) && i < dest->linecount) {
@@ -29,6 +31,8 @@ void loadFile(Buffer * dest, char * filename){
             size_t len = strlen(line);
             dest->contents[i] = (char *)malloc((len+1)*sizeof(char));
             strcpy(dest->contents[i],line);
+            dest->contents[i][len] = '\0';
+
             if(dest->contents[i][len-1] == '\n')
                 dest->contents[i][len-1] = '\0';
             i++;
@@ -183,18 +187,32 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
         }else{
             setBgColor(bg_file_color);
             printf("%5d ", row + 1); // Print line number (1-based index)
-            highlighted_line = highlightLine(buffer->contents[row],colors);
+            //
+            size_t end = buffer->xpos+win_width;
+
+            char * sub = substr(buffer->contents[row],buffer->xpos,end);
+            if(sub == NULL){
+                sub = (char *)malloc(1*sizeof(char));
+                sub[0] = '\0';
+            }
+
+            highlighted_line = highlightsubstr(buffer->contents[row],buffer->xpos,end-1,colors);
+
             if(highlighted_line == NULL){
                 highlighted_line= (char *)malloc(1*sizeof(char));
                 highlighted_line[0] = '\0';
+                w_helper = 0;
+            }else{
+                w_helper = strlen(highlighted_line) - strlen(sub);
+                free(sub);
             }
-            w_helper = strlen(highlighted_line) - strlen(buffer->contents[row]);
         }
 
         setTextColor(text_color);
 
         // Iterate over visible columns for the current row
-        for (int col = (int)buffer->xpos; col < buffer->xpos + win_width + w_helper; col++) {
+        for (int col = 0; col < win_width + w_helper ; col++) {
+
             if (end || row >= buffer->linecount || col >= strlen(highlighted_line)) {
                 printf("%c", DEF);
             } else {

@@ -1,5 +1,5 @@
 shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
-writing this from inside.
+writing this from inside
 writing this
 
 planned features: <br />
@@ -27,7 +27,7 @@ still need to fix typing too fast <br />
 why are these lines getting synced with each other <br />
 oh okay its because now i am basically writing into unallocated memory so undefined behavior <br />
 this is a side effect of dynamically set lines <br />
-fixed flickering issue on scroll <br />     
+fixed flickering issue on scroll <br />
          
 commit #4 <br />   
 now can scroll horizontally <br />
@@ -149,4 +149,11 @@ minor colorscheme changes <br />
 
 commit #22 <br />
 reduced tearing on scrolling <br />
+
+commit #23 <br />
+HEAVY rewrite of the drawbuffer function is maybe faster? now allows for the text to scroll horizontally with less memory <br />
+still need to add tab ctrl u ctrl d <br />
+need to add :theme <br />
+highlight substr is off by one right now, i am adjusting by calling it with end-1,, investigate this <br />
+add a :syntax command to quickly change what language i syntax highlight for <br />
 

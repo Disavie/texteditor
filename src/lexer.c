@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "mytui.h"
+#include <stdbool.h>
 
 typedef enum {
     NONE = 0, 
@@ -145,6 +146,8 @@ typedef struct{
     char * text;
     size_t true_length; //length INCLUDING \033...
     size_t length; //length EXCLUDING \033...
+    short fcode_len;
+    short bcode_len;
 }Token;
 
 
@@ -160,36 +163,62 @@ void changetext(Token *token, short color,const short colors[]) {
     free(token->text);
     token->text = newtext;
 }
+
+size_t numlen(int num){
+
+    size_t len = 1;
+    if(num == 0) return len;
+    while(num > 0){
+        len++;
+        num/=10;
+    }
+    return len;
+}
+
+
 void colortokens(Token * tokens, size_t tokencount,const short colors[]){
 
+
     for(size_t i = 0 ; i < tokencount ; i++) {
+        
+        size_t code_length = 0;
         switch (tokens[i].keywordtype){
 
-            case(DATA_TYPE):
-                changetext(tokens+i,colors[9],colors);
-                break;
-            case(CONTROL_FLOW):
-                changetext(tokens+i,colors[10],colors);
-                break;
-            case(FUNCTION):
-                changetext(tokens+i,colors[11],colors);
-                break;
-            case(MISC):
-                changetext(tokens+i,colors[12],colors);
-                break;
-            case(NUMBER):
-                changetext(tokens+i,colors[15],colors);
-                break;
-            case(COMMENT):
-                changetext(tokens+i,colors[3],colors);
-                break;
-            case(PREPROCESSOR):
-                changetext(tokens+i,colors[14],colors);
-                break;
-            case(STRING):
-                changetext(tokens+i,colors[13],colors);
-                break;
+        case(DATA_TYPE):
+            changetext(tokens+i,colors[9],colors);
+            code_length = 8 + numlen(colors[9]); 
+            break;
+        case(CONTROL_FLOW):
+            changetext(tokens+i,colors[10],colors);
+            code_length = 8 + numlen(colors[10]); 
+            break;
+        case(FUNCTION):
+            changetext(tokens+i,colors[11],colors);
+            code_length = 8 + numlen(colors[11]); 
+            break;
+        case(MISC):
+            changetext(tokens+i,colors[12],colors);
+            code_length = 8 + numlen(colors[12]); 
+            break;
+        case(NUMBER):
+            changetext(tokens+i,colors[15],colors);
+            code_length = 8 + numlen(colors[15]); 
+            break;
+        case(COMMENT):
+            changetext(tokens+i,colors[3],colors);
+            code_length = 8 + numlen(colors[3]); 
+            break;
+        case(PREPROCESSOR):
+            changetext(tokens+i,colors[14],colors);
+            code_length = 8 + numlen(colors[14]); 
+            break;
+        case(STRING):
+            changetext(tokens+i,colors[13],colors);
+            code_length = 8 + numlen(colors[13]); 
+            break;
         }
+        tokens[i].fcode_len = code_length;
+        tokens[i].bcode_len = 8 + numlen(colors[0]);
     }
 }
 
@@ -198,6 +227,7 @@ void remove_range(char **line, size_t index, size_t length) {
 }
 
 void insert_word(char **line, char *insert, size_t index) {
+
     size_t len_line = strlen(*line);
     size_t len_insert = strlen(insert);
 
@@ -206,19 +236,132 @@ void insert_word(char **line, char *insert, size_t index) {
         strncpy(newline, *line, index);
         strcpy(newline + index, insert);
         strcpy(newline + index + len_insert, *line + index);
+        free(*line);
         *line = newline;
     }
 }
-void reinsert_tokens(Token * tokens, size_t tokencount,char ** line){
 
-    int index_helper = 0; 
+
+size_t reinsert_tokens(Token * tokens, size_t tokencount,char ** line){
+
+    size_t index_helper = 0; 
     for(int i = 0 ; i < tokencount ; i++){
         Token token = tokens[i];
         remove_range(line,token.index+index_helper,token.length);
         insert_word(line,token.text,token.index+index_helper);
         index_helper+=(token.true_length-token.length);
     }
+    return index_helper;
 }
+
+size_t countTokenOffset(Token * tokens, size_t amount){
+
+    int i = 0;
+    size_t total = 0;
+    while(i < amount){
+        total = total + (tokens[i].fcode_len) + (tokens[i].bcode_len);
+    }
+    return total;
+}
+
+
+
+// Helper to check if the current sequence is an ANSI escape code
+bool is_ansi_code(const char *str, size_t *length) {
+    if (str[0] == '\033' && str[1] == '[') {
+        *length = 2; // Start counting after "\033["
+        while (str[*length] && (str[*length] < '@' || str[*length] > '~')) {
+            (*length)++;
+        }
+        if (str[*length]) {
+            (*length)++; // Include the final character of the escape code
+            return true;
+        }
+    }
+    return false;
+}
+
+char *extract_ansi_preserving_substring(const char *s2, size_t start, size_t end) {
+    size_t logical_index = 0;  // Logical position (ignoring ANSI codes)
+    size_t i = 0;             // Iterator for s2
+    size_t ansi_length = 0;   // Length of ANSI code if found
+    size_t buffer_size = strlen(s2) + 1;
+    char *result = malloc(buffer_size);
+    size_t result_index = 0;
+
+    if (!result) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return NULL;
+    }
+
+    while (s2[i] && logical_index <= end) {
+        if (is_ansi_code(&s2[i], &ansi_length)) {
+            // Copy the ANSI code to result
+            strncpy(&result[result_index], &s2[i], ansi_length);
+            result_index += ansi_length;
+            i += ansi_length; // Skip the ANSI code
+        } else {
+            if (logical_index >= start && logical_index <= end) {
+                result[result_index++] = s2[i];
+            }
+            i++;
+            logical_index++;
+        }
+    }
+
+    result[result_index] = '\0'; // Null-terminate the resulting string
+    return result;
+}
+
+
+char * highlightsubstr(char *line,size_t start, size_t end, const short colors[]){
+    if(line == NULL || strlen(line) == 0) return NULL;
+    if(end > strlen(line)) end = strlen(line);
+
+    Token * tokens = NULL; 
+    size_t tokencount = 0;
+    char * highlighted = (char *)malloc((strlen(line)+1)*sizeof(char));
+    strcpy(highlighted,line);
+    highlighted[strlen(line)] = '\0';
+
+    size_t i  = 0;
+    while(i < strlen(line)){
+
+        char * word = build_word(highlighted,&i);
+
+        keyword type;
+        if((type = iskeyword(word))){
+            Token token = {
+                .keywordtype = type,
+                .index = i-strlen(word),
+                .length = strlen(word),
+            };
+            token.text = (char *)malloc((strlen(word)+1)*sizeof(char));
+            strcpy(token.text,word);
+            token.text[strlen(word)] = '\0';
+            Token * new_tokens = (Token *)realloc(tokens,(tokencount+1) * sizeof(Token));
+            tokens = new_tokens;
+            tokens[tokencount] = token;
+            tokencount++;
+        }
+        free(word);
+        i++;
+    }
+
+    colortokens(tokens,tokencount,colors);
+    reinsert_tokens(tokens,tokencount,&highlighted);
+
+    char * start_ptr = highlighted+start;
+    char * end_ptr = highlighted+end;
+
+    char * sub =  extract_ansi_preserving_substring(highlighted,start,end);
+
+    free(tokens);
+    free(highlighted);
+
+    return sub;
+}
+
 
 char * highlightLine(char *line,const short colors[]){
     if(line == NULL || strlen(line) == 0) return NULL;
@@ -257,10 +400,8 @@ char * highlightLine(char *line,const short colors[]){
     colortokens(tokens,tokencount,colors);
     reinsert_tokens(tokens,tokencount,&highlighted);
 
-    for(int i = 0 ; i < tokencount ; i++) {
+    for(int i = 0 ; i < tokencount ; i++)
         free(tokens[i].text);
-    }
-
     free(tokens);
 
     return highlighted;
