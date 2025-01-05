@@ -9,6 +9,7 @@ type 'i' to enter insert mode and ESC to exit insert mode <br />
 o = move cursor down and start newline <br />
 O = move cursor up and start new line <br />
 hjkl or arrow keys move cursor <br />
+HJKL to jump more <br />
 w to jump foreward until whitespace b to jump backward until whitespace <br />
 x deleted currently character <br />
 a moves cursor right then enters insert mode <br />
@@ -26,20 +27,27 @@ no copy paste or undo redo yet <br />
 
 planned features: <br />
 
---ADD CTRL+D CTRL+U CTRL+V <br />
---add proper \t support <br />
 --add some vim <leader> imitation for faster commands (things like <leader>zz) <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
 --this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
 --add CTRL f and CTRL F <br />
 --valgrind reduce memory leaks <br />
---add filesize in KB
 --add a keystrokes tracker
+--made statusbar better,, in theory it can spillover to next line with a really really long filename <br />
+
+note for 28 <br />
+need to fix J and K <br />
+need to fix the horizontal scroll while typing at the end of a line <br />
+need to add a zz command <br />
 
 
 commit #27 <br />
 fixed lots of memory leak issues, still has memory leaking from loadFile but idk how <br />
-added ctrl u and ctrl d <br />
+finally fixed yoffset bug, now there arent random -1's <br />
+fixed oO putting you on wrong line <br />
+fixed s crashed if done on empty line <br />
+added H&L to jump to start/beginning of line <br />
+added JK to jump up/down 20 lines -- WIP,, needs adjustment <br />
 
 commit #26 <br />
 fixed fF <br />

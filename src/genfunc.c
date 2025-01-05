@@ -1,4 +1,5 @@
 #include "mytui.h"
+#include "stdint.h"
 
 void handle_signal(int d){
     ;
@@ -141,3 +142,15 @@ char * substr_2(char * start, size_t len){
     return out;
 
 }
+
+
+size_t calcsizeKB(Buffer * buf){
+
+    size_t bytes = 0;
+    for(int i = 0 ; i < buf->linecount ; i++){
+        bytes+=strlen(buf->contents[i]);
+    }
+    return bytes/1024;
+}
+
+

@@ -164,6 +164,7 @@ char * insert_to_line(Buffer * buf, size_t row, size_t index_in_line,char ch){
 
 char * remove_from_line(Buffer * buf, size_t row, size_t index) {
     char * line = buf->contents[row];
+    if(line[0] == '\0') return NULL;
     size_t len = strlen(line);
     
 
@@ -177,9 +178,10 @@ char * remove_from_line(Buffer * buf, size_t row, size_t index) {
 }
 
 
+
 void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, const short colors[]) {
 
-    win_width -= 6; // Done so that you can see line numbers
+    win_width -= buffer->xoffset+1; // Done so that you can see line numbers
 
     const char DEF = ' ';
 
@@ -199,7 +201,19 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
     char * highlighted_line = NULL;
     size_t w_helper = 0;
     // Iterate over visible rows
+    int y = 0;
+    while(y < starty){
+        movedown();
+        y++;
+    }
+    
     for (int row = (int)buffer->ypos; row < buffer->ypos + win_height; row++) {
+
+        int x = 0;
+        while(x < startx){
+            moveright();
+            x++;
+        }
         setTextColor(comment_color);
 
         // Check if the current row is beyond the actual content of the buffer
@@ -318,6 +332,12 @@ void update_statusbar(char * words,short ypos, short width, char ** modes, char 
     s = size_t_to_string(cx-buf->xoffset+buf->xpos+1);
     strcat(text2,s);
     free(s);
+    strcat(text2,"    ");
+    size_t kb = calcsizeKB(buf);
+    s = size_t_to_string(kb);
+    strcat(text2,s);
+    free(s);
+    strcat(text2,"KB");
     movecurs((size_t)ypos-1,(size_t)0);
     drawStatusBar(text2,width);
 

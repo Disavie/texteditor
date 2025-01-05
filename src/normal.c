@@ -18,7 +18,7 @@ int mimic_vim_w(Buffer * buf ,size_t cy, size_t*cx, short width){
         }
         if((*cx)+(buf->xpos)-buf->xoffset >= strlen(buf->contents[(buf->ypos)+(cy)-buf->yoffset])-1) break;
     }
-    movecurs((size_t)cy+1,(size_t)*cx);
+    movecurs((size_t)cy,(size_t)*cx);
     smart_moveright_n(buf,*cx,strlen(buf->contents[(cy)+(buf->ypos)-buf->yoffset]),width);
 
     return updated;
@@ -50,7 +50,7 @@ int mimic_vim_b(Buffer * buf ,size_t cy, size_t*cx, short width){
 
         if((*cx)+(buf->xpos)-buf->xoffset == 0) {  break; };
     }
-    movecurs((size_t)(cy)+1,(size_t)(*cx));
+    movecurs((size_t)(cy),(size_t)(*cx));
     if((*cx)+(buf->xpos)-buf->xoffset != 0)
         smart_moveright_n(buf,*cx,strlen(buf->contents[(cy)+(buf->ypos)-buf->yoffset]),width);
     return update_made;

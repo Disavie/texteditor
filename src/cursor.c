@@ -49,7 +49,7 @@ int get_cursor_pos(size_t *row, size_t *col) {
 }
 
 int snap_left(Buffer * buf, size_t* cy, size_t * cx){
-    size_t line_len = strlen(buf->contents[-1+(*cy)+buf->ypos - buf->yoffset]);
+    size_t line_len = strlen(buf->contents[(*cy)+buf->ypos - buf->yoffset]);
     int status = 1;
     if(line_len < (*cx)+buf->xpos-buf->xoffset){
         if(buf->xpos <= line_len){
@@ -65,7 +65,7 @@ int snap_left(Buffer * buf, size_t* cy, size_t * cx){
 void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,const short colors[]){
 
 
-    char * line = buf->contents[-1+(*cy)+(buf->ypos)-buf->yoffset];
+    char * line = buf->contents[(*cy)+(buf->ypos)-buf->yoffset];
     size_t len = strlen(line);
     int moveFlag = 0;
     if(len < width){
@@ -74,7 +74,7 @@ void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short 
         buf->xpos = len-width+1;
         moveFlag = 1;
     }
-    drawbuffer(0,0,height,width,buf,colors);
+    drawbuffer(buf->ycorner,buf->xcorner,height,width,buf,colors);
     if(moveFlag){ movecurs(*cy,(size_t)width+buf->xoffset-1);}
     else {movecurs(*cy,len+buf->xoffset);}
 
@@ -84,7 +84,7 @@ void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short widt
 
     if(!snap_left(buf, cy, cx)){
         get_cursor_pos(cy,cx);
-        size_t len = strlen(buf->contents[-1+(*cy)+(buf->ypos)-buf->yoffset]);
+        size_t len = strlen(buf->contents[(*cy)+(buf->ypos)-buf->yoffset]);
         if(len != 0){
             buf->xpos = len-1;
             *cx = buf->xoffset+1;
@@ -92,17 +92,17 @@ void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short widt
             buf->xpos = len;
             *cx = buf->xoffset;
         }
-        drawbuffer(0,0,height,width,buf,colors);
+        drawbuffer(buf->ycorner,buf->xcorner,height,width,buf,colors);
         movecurs(*cy,*cx);
     }
 }
 
 int smart_moveup(Buffer * buf,size_t cy ){
     int pady = 4;
-    if(buf->ypos == 0 && cy-1 > buf->yoffset){
+    if(buf->ypos == 0 && cy > buf->yoffset){
         moveup();
     }else if(buf->ypos != 0){
-        if(cy-1-pady > buf->yoffset){
+        if(cy > buf->yoffset + pady){
             moveup(); 
         }else{
             buf->ypos--;
@@ -116,13 +116,23 @@ int smart_movedown(Buffer * buf,size_t cy,int flag, int height){
 
     int pady = 4;
 
-    if(buf->ypos+cy-buf->yoffset < buf->linecount){
-        if(cy >= height-4 && (flag || buf->ypos + cy != buf->linecount)){ 
+    if(buf->ypos + cy - buf->yoffset < buf->linecount-1){
+
+        if(cy < height - pady){
+            movedown();
+            return 0;
+        }else{
+            buf->ypos++;
+            return 1;
+        }
+        /*
+        if(cy >= height-pady && (flag || buf->ypos + cy != buf->linecount-1)){ 
             buf->ypos++;
             return 1;
         }else{
             movedown();
         }
+        */
     }
     return 0;
 
@@ -193,9 +203,9 @@ int cursorMovement(Buffer * buf,char key, size_t cy, size_t cx,char mode, int he
             ;
             int i;
             if(mode == 'i'){
-                i = smart_moveright_i(buf,cx,strlen(buf->contents[-1+cy+buf->ypos-buf->yoffset]),width);
+                i = smart_moveright_i(buf,cx,strlen(buf->contents[cy+buf->ypos-buf->yoffset]),width);
             }else{
-                i = smart_moveright_n(buf,cx,strlen(buf->contents[-1+cy+buf->ypos-buf->yoffset]),width);
+                i = smart_moveright_n(buf,cx,strlen(buf->contents[cy+buf->ypos-buf->yoffset]),width);
             }
 
             if (i) return 1;

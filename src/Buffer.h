@@ -9,9 +9,15 @@ typedef struct{
     char ** contents;
     size_t linecount;
 
-    //values for when being rendered on screen
+    //offset inside the buffer
     short yoffset;
     short xoffset;
+
+    //top left corner values
+    short xcorner;
+    short ycorner;
+
+    //values for when being rendered on screen
     size_t xpos;
     size_t ypos;
 
