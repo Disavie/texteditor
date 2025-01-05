@@ -266,15 +266,14 @@ size_t countTokenOffset(Token * tokens, size_t amount){
 
 
 
-// Helper to check if the current sequence is an ANSI escape code
 bool is_ansi_code(const char *str, size_t *length) {
     if (str[0] == '\033' && str[1] == '[') {
-        *length = 2; // Start counting after "\033["
+        *length = 2; 
         while (str[*length] && (str[*length] < '@' || str[*length] > '~')) {
             (*length)++;
         }
         if (str[*length]) {
-            (*length)++; // Include the final character of the escape code
+            (*length)++;
             return true;
         }
     }

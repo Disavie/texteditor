@@ -42,6 +42,7 @@ typedef enum {
     COLOR_RED_ROSE = 160,
     COLOR_RED_DARK = 52,
     COLOR_RED_WASHED_FADED = 167,
+    COLOR_BARELY_RED = 131,
 
     // Greens
     COLOR_GREEN_BRIGHT = 2,
@@ -55,6 +56,7 @@ typedef enum {
     COLOR_MINT_GREEN = 36,
     COLOR_MINT_GREEN2 = 42,
     COLOR_FADED_GREEN = 72,
+    COLOR_FADED_GREEN2 = 71,
 
     // Blues
     COLOR_BLUE_BRIGHT = 4,
@@ -95,10 +97,14 @@ typedef enum {
     COLOR_PURPLE_VIOLET = 129,
     COLOR_PURPLE_AMETHYST = 93,
     COLOR_PURPLE_DEEP = 92,
+    COLOR_PURPLE_GRAY = 60,
     
     //Magenta
 
     COLOR_MAGENTA = 125,
+    COLOR_183 = 183,
+    COLOR_MAGENTA_PALE = 189,
+
 
     // Pinks
     COLOR_PINK_LIGHT = 218,
@@ -107,6 +113,7 @@ typedef enum {
     COLOR_PINK_ROSE = 205,
     COLOR_PINK_FUCHSIA = 199,
     COLOR_PINK_HOT = 201,
+    COLOR_BUBBLEGUN = 175,
 
     // Browns
     COLOR_BROWN_LIGHT = 130,
@@ -140,6 +147,7 @@ typedef enum {
     COLOR_SAGE = 108,
     COLOR_LIME = 82,
     COLOR_CYAN = 6,
+    COLOR_CYAN2 = 66,
 
     // Metallics
     COLOR_GOLD_METAL = 220,

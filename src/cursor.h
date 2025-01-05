@@ -10,11 +10,13 @@ void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short widt
 void snapCursorRight(Buffer * buf, size_t * cy, size_t* cx, short height, short width,const short colors[]);
 
 int smart_moveup(Buffer * buf,size_t cy );
-int smart_movedown(Buffer * buf,size_t cy,int flag, int height);
+int smart_movedown(Buffer * buf,size_t cy, int height);
 int smart_moveleft(Buffer * buf,size_t cx);
 int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width);
 int smart_moveright_i(Buffer * buf,size_t cx, size_t length,int width);
 int cursorMovement(Buffer * buf,char key, size_t cx, size_t cy,char mode, int height, int width);
+
+void centeronline(Buffer * buf,size_t cy, size_t cx, short height);
 
 
 #endif

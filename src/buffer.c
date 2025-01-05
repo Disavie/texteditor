@@ -181,7 +181,7 @@ char * remove_from_line(Buffer * buf, size_t row, size_t index) {
 
 void drawbuffer(short starty, short startx, int win_height, int win_width, Buffer *buffer, const short colors[]) {
 
-    win_width -= buffer->xoffset+1; // Done so that you can see line numbers
+    win_width -= buffer->xoffset-1;// Done so that you can see line numbers
 
     const char DEF = ' ';
 
@@ -248,7 +248,7 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
         setTextColor(text_color);
 
         // Iterate over visible columns for the current row
-        for (int col = 0; col < win_width + w_helper ; col++) {
+        for (int col = 0; col < win_width + w_helper  ; col++) {
 
             if (end || row >= buffer->linecount || col >= strlen(highlighted_line)) {
                 printf("%c", DEF);
@@ -288,34 +288,23 @@ void drawStatusBar(char * text,  int width ){
 }
 
 
-void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,const short colors[],short isError, size_t cy, size_t cx){
+void update_statusbar(char * words,short ypos, short width, Buffer * buf,const short colors[],size_t cy, size_t cx){
 
     hidecursor();
-
+    //Lower status bar, displays the mode OR command buffer
     char text[width];
     memset(text,'\0',sizeof(text));
-
-    strcpy(text," ");
-
-    if(words[0] == '\0'){
-        setTextColor(colors[8]);
-        if(mode == 'n')
-            strcat(text,modes[0]);
-        else if(mode == 'i')
-            strcat(text,modes[1]);
-    }else{
+    if(words[0] == '/'){
         setTextColor(colors[0]);
-        strcpy(text,words);
+    }else{
+        setTextColor(colors[8]);
     }
-
-    if(isError)
-        setTextColor(colors[5]);
-
+    strcpy(text,words);
     setBgColor(colors[2]);
     movecurs((size_t)ypos,(size_t)0);
     drawStatusBar(text,width);
     
-
+    //Upper status bar.. filename cursor pos filesize
     setBgColor(colors[6]);
     setTextColor(colors[7]);
     char text2[width];

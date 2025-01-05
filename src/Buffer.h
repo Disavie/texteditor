@@ -36,6 +36,6 @@ int saveFile(Buffer * buf);
 void drawbuffer(short starty, short startx, int win_height,int win_width, Buffer * buffer,const short colors[]); 
 
 void drawStatusBar(char * text,int width);
-void update_statusbar(char * words,short ypos, short width, char ** modes, char mode, Buffer * buf,const short colors[],short isError, size_t cy, size_t cx);
+void update_statusbar(char * words,short ypos, short width, Buffer * buf,const short colors[],size_t cy, size_t cx);
 
 #endif

@@ -13,6 +13,7 @@
 #include "themes/chillz.h"
 #include "themes/retro_orange.h"
 #include "themes/retro_green.h"
+#include "themes/light.h"
 
 
 
@@ -34,6 +35,7 @@ static Theme zthemes[] = {
     {"chillz",chillz}, //ugly as hell
     {"retro_orange",retro_orange},
     {"retro_green",retro_green},
+    {"light",light},
 };
 
 static const size_t zthemecount = sizeof(zthemes)/sizeof(zthemes[0]);

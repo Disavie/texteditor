@@ -98,7 +98,7 @@ void snapCursorLeft(Buffer * buf,size_t * cy, size_t* cx,short height,short widt
 }
 
 int smart_moveup(Buffer * buf,size_t cy ){
-    int pady = 4;
+    int pady = 10;
     if(buf->ypos == 0 && cy > buf->yoffset){
         moveup();
     }else if(buf->ypos != 0){
@@ -112,9 +112,9 @@ int smart_moveup(Buffer * buf,size_t cy ){
     return 0;
 }
 
-int smart_movedown(Buffer * buf,size_t cy,int flag, int height){
+int smart_movedown(Buffer * buf,size_t cy,int height){
 
-    int pady = 4;
+    int pady = 10;
 
     if(buf->ypos + cy - buf->yoffset < buf->linecount-1){
 
@@ -125,21 +125,13 @@ int smart_movedown(Buffer * buf,size_t cy,int flag, int height){
             buf->ypos++;
             return 1;
         }
-        /*
-        if(cy >= height-pady && (flag || buf->ypos + cy != buf->linecount-1)){ 
-            buf->ypos++;
-            return 1;
-        }else{
-            movedown();
-        }
-        */
     }
     return 0;
 
 }
 int smart_moveleft(Buffer * buf,size_t cx){
 
-    int padx = 4;
+    int padx = 10;
     if(buf->xpos == 0 && cx > buf->xoffset){
         moveleft();
     }else if(buf->xpos != 0){
@@ -156,7 +148,7 @@ int smart_moveleft(Buffer * buf,size_t cx){
 
 int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
     
-    int padx = 4;
+    int padx = 10;
 
     if(cx == width-padx && buf->xpos + cx - buf->xpos < length){
         buf->xpos++;
@@ -172,9 +164,9 @@ int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
 
 int smart_moveright_i(Buffer * buf,size_t cx, size_t length,int width){
 
-    int padx = 4;
+    int padx = 10;
 
-    if(cx == width - 1 - padx && buf->xpos + cx - buf->xpos < length){
+    if(cx == width - 1 - padx && buf->xpos + cx - buf->xpos < length+1 ){
         buf->xpos++;
         return 1;
     }
@@ -195,7 +187,7 @@ int cursorMovement(Buffer * buf,char key, size_t cy, size_t cx,char mode, int he
                 return 1;
             break;
         case 'B':
-            if(smart_movedown(buf,cy,0,height))
+            if(smart_movedown(buf,cy,height))
                 return 1;
             break;
 
@@ -219,4 +211,27 @@ int cursorMovement(Buffer * buf,char key, size_t cy, size_t cx,char mode, int he
             ;
     }
     return 0;
+}
+
+
+
+
+void centeronline(Buffer * buf,size_t cy, size_t cx, short height) {
+    
+    int distance = height/2 - cy;
+    int i = 0;
+    while( i < abs(distance) && buf->ypos != 0 && buf->ypos != buf->linecount-1) {
+        if(distance > 0){
+            buf->ypos--;
+        }else if ( distance < 0) {
+            buf->ypos++;    
+        }
+        i++;
+    } 
+    if(distance > 0) {
+        movecurs(cy + i,cx);
+    }else if( distance < 0 ) {
+        movecurs(cy - i,cx);
+    }
+
 }

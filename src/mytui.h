@@ -17,6 +17,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <signal.h>
+#include <stdarg.h>
 #include "Buffer.h"
 
 //stop CTRL+C/X/\ from killing
@@ -41,6 +42,7 @@ size_t countLines(FILE * f);
 // --DRAWING TO SCREEN FUNCTIONS --
 void drawLogo(int HEIGHT,int WIDTH, const short color[]);
 
+void strcpyf(char *destination, size_t dest_size, const char *format, ...) ;
 
 
 
@@ -49,7 +51,7 @@ int mimic_vim_w(Buffer * buf,size_t  cy, size_t *cx, short width);
 int mimic_vim_b(Buffer * buf ,size_t  cy,size_t *cx, short width);
 
 
-char updateMode(char inputch, char *mode);
+char updateMode(char inputch, char *mode,char ** modestr);
 
 
 char * highlightLine(char *line,const short colors[]);

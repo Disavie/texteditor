@@ -89,15 +89,29 @@ void logNum(double num){
 
 void clearLog(){ FILE * log = fopen("main.log","w"); fclose(log);}
 
-char updateMode(char inputch, char *mode){
+char updateMode(char inputch, char * mode, char ** modestr){
 
-  if(inputch == 'i' && *mode != 'i'){
-    *mode = 'i';
-    return 1;
-  }else return 0; 
+    if(inputch == 'i' && *mode != 'i'){
+        *mode = 'i';
+        strcpy(*modestr,"--INSERT--");
+        return 1;
+    }else {
+        return 0; 
+    }
 }
 
+void strcpyf(char *destination, size_t dest_size, const char *format, ...) {
+    va_list args;
 
+    // Start processing variable arguments
+    va_start(args, format);
+
+    // Write formatted string into the destination buffer safely
+    vsnprintf(destination, dest_size, format, args);
+
+    // End processing variable arguments
+    va_end(args);
+}
 
 void trim_trailing_spaces(char *str) {
     int len = strlen(str);

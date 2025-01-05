@@ -1,21 +1,21 @@
-shitty terminal based text editor that uses basically only ANSI escape codes to move the cursor and do that stuff  <br />
-writing this from inside
-will this indent properly? <br />
+terminal text editor that uses 0 libraries.. everything is written by me <br />
 
-
-
+CONTROLS <br />
 type '/' to open the command line <br />
-type 'i' to enter insert mode and ESC to exit insert mode <br />
+type 'i' to enter insert mode <br />
+type ESC to exit insert mode <br>
+
 o = move cursor down and start newline <br />
 O = move cursor up and start new line <br />
 hjkl or arrow keys move cursor <br />
-HJKL to jump more <br />
+HJKL to jump 24 lines and center on screen <br />
 w to jump foreward until whitespace b to jump backward until whitespace <br />
 x deleted currently character <br />
 a moves cursor right then enters insert mode <br />
 s deletes character and enters insert mode <br />
 f[letter] = find [letter] in line <br />
 F[letter] = find [letter] in line backwards <br />
+c = center current line on screen <br />
 
 /theme to change theme <br />
 --themes: default1 default2 default3 default4 deafult5 gptcolors retro_orange retro_green <br />
@@ -23,6 +23,9 @@ F[letter] = find [letter] in line backwards <br />
 
 no copy paste or undo redo yet <br />
 
+
+--horizontal scroll bug on hitting w and L ,, b H work fine <br/> 
+--horizontal scroll bug when typing at the end of a line, doesnt scroll <br />
 
 
 planned features: <br />
@@ -35,11 +38,18 @@ planned features: <br />
 --add a keystrokes tracker
 --made statusbar better,, in theory it can spillover to next line with a really really long filename <br />
 
-note for 28 <br />
-need to fix J and K <br />
-need to fix the horizontal scroll while typing at the end of a line <br />
-need to add a zz command <br />
+note for 29 <br />
+start work on visual line mode to copy <br />
+start work on copy paste to zep-only buffer (vim yank) <br />
+need to add ability to do dw db and relative line jumps <br />
 
+commit #28 <br />
+fixed JK <br />
+updated how statusbar is drawm <br />
+added c to center screen <br />
+JK both now center screen too <br />
+fixed updateMode <br />
+cleaned up normalmode checks,, can move entire portion to its own file soon to clean up textedit.c <br />
 
 commit #27 <br />
 fixed lots of memory leak issues, still has memory leaking from loadFile but idk how <br />
