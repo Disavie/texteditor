@@ -3,8 +3,8 @@
 
 int main(int arc, char ** argv){
 
-    printf("Testing Unicode: ü ✓\n");
-    printf("what about this \'%c\'",160); 
+//    printf("Testing Unicode: ü ✓\n");
+//    printf("what about this \'%c\'",160); 
     system("gcc src/genfunc.c -c -o bin/genfunc.o");
     system("gcc src/drawlogo.c -c -o bin/drawlogo.o");
     system("gcc src/normal.c -c -o bin/normal.o");

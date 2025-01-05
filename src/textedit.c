@@ -176,7 +176,7 @@ int main(int argc, char ** argv){
 
                     smart_moveright_n(&mBuf,cx,strlen(mBuf.contents[-1+cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH);
                     get_cursor_pos(&cy,&cx);
-                    while(mBuf.xpos+cx-mBuf.xoffset < (int)strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])-1){
+                    while(mBuf.xpos+cx-mBuf.xoffset < (int)strlen(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset])){
                         if(mBuf.contents[-1+mBuf.ypos+cy-mBuf.yoffset][mBuf.xpos+cx-mBuf.xoffset] == temp){
                             found = 1;
                             break;
@@ -496,6 +496,7 @@ int main(int argc, char ** argv){
     }
     if(mBuf.filename != NULL)
         free(mBuf.filename);
+
     resetColor();
     restore_input_mode(&oldtermios);
     closeAltBuffer();

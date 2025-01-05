@@ -152,12 +152,11 @@ typedef struct{
 
 
 void changetext(Token *token, short color,const short colors[]) {
-    char col_str[32];
-    snprintf(col_str, sizeof(col_str), "%d", color);
 
-    size_t new_len = strlen(token->text) + 32 + strlen(col_str);
+    size_t new_len = strlen(token->text) + 32;
     char *newtext = (char *)malloc(new_len + 1); // +1 for null terminator
-    newtext[new_len] = '\0';
+    memset(newtext,'\0',new_len);
+
     snprintf(newtext, new_len + 1, "\033[38;5;%dm%s\033[38;5;%dm", color, token->text,colors[0]);
     token->true_length = strlen(newtext);
     free(token->text);
@@ -250,6 +249,7 @@ size_t reinsert_tokens(Token * tokens, size_t tokencount,char ** line){
         remove_range(line,token.index+index_helper,token.length);
         insert_word(line,token.text,token.index+index_helper);
         index_helper+=(token.true_length-token.length);
+        free(token.text);
     }
     return index_helper;
 }

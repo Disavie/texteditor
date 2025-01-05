@@ -2,45 +2,58 @@
 #include "Buffer.h"
 
 
-void loadFile(Buffer * dest, char * filename){
-    FILE * f = fopen(filename,"r");
-    if ( f == NULL ){
-        createFile(dest ,filename);
-    }else{
+void loadFile(Buffer *dest, char *filename) {
 
-        char * oldname = dest->filename;
-        dest->filename = malloc((strlen(filename)+1)*sizeof(char));
-        strcpy(dest->filename,filename);
-        dest->filename[strlen(filename)] = '\0';
-        if(oldname != NULL) free(oldname);
-
-        dest->linecount = countLines(f);
-
-        char ** oldcontents = dest->contents;
-        char ** newcontents = (char **)malloc((dest->linecount)*sizeof(char *));
-        dest->contents = newcontents;
-        if(oldcontents != NULL) {
-            free(oldcontents);
-        }
-        
-        int i = 0;
-        while(!feof(f) && i < dest->linecount) {
-    
-            char line[1024];
-            fgets(line,sizeof(line),f);
-            size_t len = strlen(line);
-            dest->contents[i] = (char *)malloc((len+1)*sizeof(char));
-            strcpy(dest->contents[i],line);
-            dest->contents[i][len] = '\0';
-
-            if(dest->contents[i][len-1] == '\n')
-                dest->contents[i][len-1] = '\0';
-            i++;
-        }
-        fclose(f);
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) {
+        createFile(dest, filename);
+        return;
     }
-}
 
+    size_t old_linecount = dest->linecount;
+    char *oldname = dest->filename;
+
+    char *newname = malloc((strlen(filename) + 1) * sizeof(char));
+
+    strcpy(newname, filename);
+    dest->filename = newname;
+    if (oldname) free(oldname);
+
+    // Count lines in file
+    dest->linecount = countLines(f);
+
+    // Allocate new contents array
+    char **newcontents = (char **)malloc(dest->linecount * sizeof(char *));
+
+    // Free old contents
+    if (dest->contents) {
+        for (size_t i = 0; i < old_linecount; i++) {
+            free(dest->contents[i]);
+        }
+        free(dest->contents);
+    }
+    dest->contents = newcontents;
+
+    size_t i = 0;
+    char line[1024];
+    while (i < dest->linecount && fgets(line, sizeof(line), f)) {
+        size_t len = strlen(line);
+
+        // Trim newline if present
+        if (len > 0 && line[len - 1] == '\n') {
+            line[len - 1] = '\0';
+            len--;
+        }
+
+        // Allocate memory for line
+        dest->contents[i] = (char *)malloc((len + 1) * sizeof(char));
+
+        strcpy(dest->contents[i], line);
+        i++;
+    }
+
+    fclose(f);
+}
 
 void createFile(Buffer * dest,char * filename){
 
@@ -214,8 +227,8 @@ void drawbuffer(short starty, short startx, int win_height, int win_width, Buffe
                 w_helper = 0;
             }else{
                 w_helper = strlen(highlighted_line) - strlen(sub);
-                free(sub);
             }
+            free(sub);
         }
 
         setTextColor(text_color);
