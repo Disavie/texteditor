@@ -21,5 +21,6 @@ const short gptcolors[] = {
     COLOR_ORANGE_LIGHT, //strings
     COLOR_PURPLE_SOFT_LAVENDER, //preprocessor
     COLOR_MINT_GREEN2, //NUMBERS
+    COLOR_ORANGE_LIGHT, // anglebrackets
 };
 #endif

@@ -20,6 +20,7 @@ const short default2[] = {
     COLOR_ORANGE_LIGHT, //strings
     COLOR_PURPLE_SOFT_LAVENDER, //preprocessor
     COLOR_FADED_GREEN,
+    COLOR_ORANGE_LIGHT, //anglebrackets
 };
 
 #endif

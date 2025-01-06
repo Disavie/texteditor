@@ -18,15 +18,10 @@ F[letter] = find [letter] in line backwards <br />
 c = center current line on screen <br />
 
 /theme to change theme <br />
---themes: default1 default2 default3 default4 deafult5 gptcolors retro_orange retro_green <br />
+--themes: light dark default1 default2 default3 default4 deafult5 gptcolors retro_orange retro_green <br />
 /w to save /q to quit /e to edit a file <br />
 
 no copy paste or undo redo yet <br />
-
-
---horizontal scroll bug on hitting w and L ,, b H work fine <br/> 
---horizontal scroll bug when typing at the end of a line, doesnt scroll <br />
-
 
 planned features: <br />
 
@@ -38,10 +33,22 @@ planned features: <br />
 --add a keystrokes tracker
 --made statusbar better,, in theory it can spillover to next line with a really really long filename <br />
 
-note for 29 <br />
+
+note for 30 <br />
 start work on visual line mode to copy <br />
 start work on copy paste to zep-only buffer (vim yank) <br />
 need to add ability to do dw db and relative line jumps <br />
+
+commit #29 <br />
+fixed w L scroll bugs <br />
+fixed typing at end of line bug <br />
+now tracked how many bytes were added in most recent write <br />
+now tracks time of most recent write <br />
+can save with ctrl s  <br />
+added a dark teme <br />
+added default theme is light theme <br />
+going to add a feature to auto toggle between light and dark theme at certain times of the day <br />
+
 
 commit #28 <br />
 fixed JK <br />

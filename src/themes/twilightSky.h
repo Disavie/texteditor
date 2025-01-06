@@ -20,5 +20,6 @@ const short twilightSky[] = {
     COLOR_ORANGE_TANGERINE,// strings
     COLOR_PURPLE_VIOLET,   // preprocessor
     COLOR_MINT_GREEN,      // numbers
+    COLOR_ORANGE_TANGERINE,// anglebrackets 
 };
 #endif

@@ -82,25 +82,59 @@ void replace_tab(char ** line){
             (*line)[i] = ' ';
     }
 }
+Buffer * copyBuffer(Buffer * buf){
 
-int saveFile(Buffer * file){
+    Buffer * new = (Buffer *)malloc(sizeof(Buffer));
+
+    new->linecount = buf->linecount;
+    new->ypos = 0;
+    new->xpos = 0;
+    new->xoffset = buf->xoffset;
+    new->yoffset = buf->yoffset;
+    new->ycorner = buf->ycorner;
+    new->xcorner = buf->xcorner;
+
+   if(buf->filename != NULL){    
+        new->filename = (char *)malloc((strlen(buf->filename)+1)*sizeof(char));
+        strcpy(new->filename,buf->filename);
+        new->filename[strlen(buf->filename)] = '\0';
+    } else {
+        new->filename = NULL;
+    }
+    char ** newcontents = (char **)malloc(buf->linecount * sizeof(char *));
+    new->contents = newcontents;
+    for(int i = 0 ; i < buf->linecount ; i++){
+        new->contents[i] = malloc((strlen(buf->contents[i])+1)*sizeof(char));
+        strcpy(new->contents[i],buf->contents[i]);
+        new->contents[i][strlen(buf->contents[i])] = '\0';
+    }
+
+
+    return new;
+}
+
+void freeBuffer(Buffer * buf){
+    for(size_t i = 0 ; i < buf->linecount ; i++){
+        free(buf->contents[i]);
+    }
+    if(buf->filename != NULL)
+        free(buf->filename);
+    free(buf);
+}
+
+Buffer * saveFile(Buffer * file){
 
     FILE * f;
 
     f = fopen(file->filename,"w");
-    if (f == NULL){
-        return 1;
-    }else{
-        for(int i = 0 ; i < file->linecount; i++){
-            char * line = file->contents[i];
-            replace_tab(&line);
-            fprintf(f,"%s\n",file->contents[i]);
-        }
-        fclose(f);
+    for(int i = 0 ; i < file->linecount; i++){
+        char * line = file->contents[i];
+        replace_tab(&line);
+        fprintf(f,"%s\n",file->contents[i]);
     }
-    return 0;
+    fclose(f);
 
-
+    return copyBuffer(file);
 }
 
 char *insert_line(Buffer * buf, char * line,size_t index) {

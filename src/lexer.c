@@ -5,6 +5,7 @@
 #include "mytui.h"
 #include <stdbool.h>
 
+
 typedef enum {
     NONE = 0, 
     DATA_TYPE = 1, //int float double char void size_t short long
@@ -14,7 +15,9 @@ typedef enum {
     NUMBER = 5,
     STRING = 6,
     COMMENT = 7,
-    PREPROCESSOR = 8
+    PREPROCESSOR = 8,
+    ANGLE_BRACKETS = 9,
+
 }keyword;
 
 const char * DATA_TYPE_KEYWORDS[] = {
@@ -27,19 +30,22 @@ const char * FUNCTION_KEYWORDS[] = {
     "return"
 };
 const char * MISC_KEYWORDS[] = {
-    "const","typedef","struct"
+    "const","typedef","struct","NULL"
 };
 
-char * build_word(char * line, size_t *index){
+char * build_word(char * line, size_t *index) {
     size_t start = *index;
     size_t len = 0;
 
-    while(isspace(line[start])){
+    // Skip any leading white spaces
+    while (isspace(line[start])) {
         start++;
         (*index)++;
     }
 
     size_t current = start;
+
+    // Handle content inside quotes (single or double)
     if (line[current] == '"' || line[current] == '\'') {
         char quote_type = line[current];
         current++;
@@ -50,12 +56,30 @@ char * build_word(char * line, size_t *index){
             len++;
             (*index)++;
         }
-        if(line[current] != '\0'){
+        if (line[current] != '\0') {
             current++;
             len++;
             (*index)++;
         }
-    }else if (line[current] == '/' && line[current + 1] == '/') {
+    } 
+    // Handle content inside angle brackets <>
+    else if (line[current] == '<') {
+        current++;
+        (*index)++;
+        len++;
+        while (line[current] != '>' && line[current] != '\0') {
+            current++;
+            len++;
+            (*index)++;
+        }
+        if (line[current] == '>') {
+            current++;
+            len++;
+            (*index)++;
+        }
+    }
+    // Handle single-line comments (starting with //)
+    else if (line[current] == '/' && line[current + 1] == '/') {
         current++;
         (*index)++;
         len++;
@@ -64,16 +88,24 @@ char * build_word(char * line, size_t *index){
             (*index)++;
             len++;
         }
-    }else if (line[current] == '#') {
+    } 
+    // Handle preprocessor directives (starting with #)
+    else if (line[current] == '#') {
         current++;
         (*index)++;
         len++;
-        while (line[current] != '\0') {
+        // Capture until < or " are encountered, but do not include them
+        while (line[current] != '\0' && line[current] != '\n' && line[current] != '<' && line[current] != '"') {
             current++;
-            (*index)++;
             len++;
+            (*index)++;
         }
-    }else {
+    } 
+    // Handle regular words consisting of alphanumeric characters or underscores
+    else {
+        current++;
+        len++;
+        (*index)++;
         while (line[current] != '\0' && (isalnum(line[current]) || line[current] == '_')) {
             current++;
             len++;
@@ -81,12 +113,14 @@ char * build_word(char * line, size_t *index){
         }
     }
 
-    char * word = (char *)malloc((len+1)*sizeof(char));
-    strncpy(word,line+start,len);
+    // Allocate memory for the word and copy it
+    char * word = (char *)malloc((len + 1) * sizeof(char));
+    strncpy(word, line + start, len);
     word[len] = '\0';
+
     return word;
 }
-
+ 
 int isnumber(char * word){
 
     if(strlen(word) == 0)
@@ -108,6 +142,8 @@ keyword iskeyword(char * word){
         return NUMBER;
     }else if(word[0] == '\'' || word[0] == '"'){
         return STRING;
+    }else if(word[0] == '<'){
+        return ANGLE_BRACKETS;
     }else if(word[0] == '/' && word[1] == '/'){
         return COMMENT;
     }else if(word[0] == '#'){
@@ -214,6 +250,10 @@ void colortokens(Token * tokens, size_t tokencount,const short colors[]){
         case(STRING):
             changetext(tokens+i,colors[13],colors);
             code_length = 8 + numlen(colors[13]); 
+            break;
+        case(ANGLE_BRACKETS):
+            changetext(tokens+i,colors[16],colors);
+            code_length = 8 + numlen(colors[16]); 
             break;
         }
         tokens[i].fcode_len = code_length;
@@ -324,6 +364,7 @@ char * highlightsubstr(char *line,size_t start, size_t end, const short colors[]
     highlighted[strlen(line)] = '\0';
 
     size_t i  = 0;
+    int loops = -1;
     while(i < strlen(line)){
 
         char * word = build_word(highlighted,&i);
@@ -344,7 +385,6 @@ char * highlightsubstr(char *line,size_t start, size_t end, const short colors[]
             tokencount++;
         }
         free(word);
-        i++;
     }
 
     colortokens(tokens,tokencount,colors);

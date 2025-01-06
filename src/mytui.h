@@ -3,7 +3,6 @@
 
 
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
 #include <math.h>
 #include <locale.h>
@@ -11,13 +10,14 @@
 #include <wchar.h>
 #include <termios.h>
 #include <sys/select.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <string.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <sys/time.h>
+#include <time.h>
 #include "Buffer.h"
 
 //stop CTRL+C/X/\ from killing
@@ -37,6 +37,7 @@ int get_terminal_size(int *rows, int *cols) ;
 
 char* size_t_to_string(size_t num) ;
 double get_time_ms();
+void get24Htime(char * put,size_t size);
 size_t countLines(FILE * f);
 
 // --DRAWING TO SCREEN FUNCTIONS --
@@ -59,6 +60,7 @@ char * highlightsubstr(char *line,size_t start, size_t end, const short colors[]
 char * substr(char * line, size_t start, size_t end);
 char * substr_2(char * start, size_t end);
 size_t calcsizeKB(Buffer * buf);
+size_t calcsize(Buffer * buf);
 #endif
 
 

@@ -20,6 +20,7 @@ const short forestWhispers[] = {
     COLOR_ORANGE_BRIGHT,   // strings
     COLOR_PURPLE_VIOLET,   // preprocessor
     COLOR_MINT_GREEN,      // numbers
+    COLOR_ORANGE_BRIGHT,   // anglebrakets 
 };
 
 #endif

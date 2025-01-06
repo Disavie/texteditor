@@ -22,6 +22,7 @@ const short light[] = {
     COLOR_FADED_GREEN2, //strings
     COLOR_BUBBLEGUN, //preprocessor
     COLOR_ORANGE_BRIGHT, //digits
+    COLOR_FADED_GREEN2, //angle brackets
 };
 
 

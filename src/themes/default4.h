@@ -21,6 +21,7 @@ const short default4[] = {
     COLOR_ORANGE_CARAMEL,  // strings
     COLOR_PURPLE_ORCHID,   // preprocessor
     COLOR_MINT_GREEN,      // numbers
+    COLOR_ORANGE_CARAMEL,  // anglebrackets 
 };
 
 

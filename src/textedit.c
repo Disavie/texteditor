@@ -57,12 +57,17 @@ int main(int argc, char ** argv){
     short WINHEIGHT = HEIGHT - STATUSBARHEIGHT;
     short WINWIDTH = WIDTH;
 
+    int lastsavesize= 0;
+    char lastsavetimestr[64];
+    get24Htime(lastsavetimestr,64);
     char * modestr = (char *)malloc(65*sizeof(char));
     strcpy(modestr,"--NORMAL--");
+    strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+
 
     drawbuffer(mBuf.ycorner,mBuf.xcorner,WINHEIGHT,WINWIDTH,&mBuf,colors);
     movecurs(cy,cx);
-    update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
     if(argc == 1){movecurs((mBuf.linecount),(size_t)0); drawLogo(HEIGHT,WIDTH, colors); }
     movecurs(cy,cx);
     showcursor();
@@ -80,6 +85,7 @@ int main(int argc, char ** argv){
     short cmdi = 0;
 
     int quit = 0;
+    Buffer * lastSave = copyBuffer(&mBuf);
 
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
 
@@ -95,10 +101,13 @@ int main(int argc, char ** argv){
         ch = input_buffer[0];
 
         if(updateMode(ch,&mode,&modestr)){ 
-            update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+            strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize ,lastsavetimestr);
+            update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
             continue;
         }
-
+        //varibles in here
+        //mBuf cy cx WINHEIGHT, WINWIDTH, statusBarMsg
+        //colors
         if(mode == 'n'){
             switch((int)ch){
                 case 'h':
@@ -136,7 +145,11 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     break;
                 case 'L': 
-                    snapCursorRight(&mBuf,&cy,&cx,WINHEIGHT,WINWIDTH,colors);
+                    while(mBuf.xpos + cx - mBuf.xoffset < strlen(mBuf.contents[mBuf.ypos + cy -  mBuf.yoffset])-1){
+                        smart_moveright_n(&mBuf,cx,strlen(mBuf.contents[mBuf.ypos + cy - mBuf.yoffset]),WINWIDTH);
+                        get_cursor_pos(&cy,&cx);
+                    }
+                    update_made = 1;
                     break;
                 case 'd':
                     if(mBuf.linecount == 1) {
@@ -163,7 +176,8 @@ int main(int argc, char ** argv){
                     smart_moveright_i(&mBuf,cx,strlen(mBuf.contents[cy+mBuf.ypos-mBuf.yoffset]),WINWIDTH);
                     get_cursor_pos(&cy,&cx);
                     updateMode('i',&mode,&modestr); 
-                    update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+                    strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+                    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
                     goto end_frame;
                 case 'x':
                     remove_from_line(&mBuf,mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
@@ -173,7 +187,8 @@ int main(int argc, char ** argv){
                     remove_from_line(&mBuf,mBuf.ypos+cy-mBuf.yoffset,mBuf.xpos+cx-mBuf.xoffset);
                     update_made = 1;
                     updateMode('i',&mode,&modestr); 
-                    update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+                    strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+                    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
                     goto end_frame;
                 case 'o':
                     ;    
@@ -184,7 +199,8 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode,&modestr); 
-                    update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+                    strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+                    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
                     goto end_frame;
                 case 'O':
                     ;    
@@ -194,7 +210,8 @@ int main(int argc, char ** argv){
                     update_made = 1;
                     hasSaved = 0;
                     updateMode('i',&mode,&modestr); 
-                    update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+                    strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+                    update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
                     goto end_frame;
                 case 'f':
                     ;
@@ -254,6 +271,19 @@ int main(int argc, char ** argv){
                     centeronline(&mBuf,cy,cx,WINHEIGHT);
                     update_made = 1;
                     break;
+                case 19: //CTRL + S
+                    if(mBuf.filename != NULL){
+                        int newbytes = calcsize(&mBuf);
+                        int oldbytes = calcsize(lastSave);
+                        lastsavesize= abs(newbytes-oldbytes);
+                        lastSave = saveFile(&mBuf);
+                        get24Htime(lastsavetimestr,64);
+                        strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,abs(newbytes-oldbytes),lastsavetimestr);
+                        hasSaved = 1;
+                    }else{
+                        strcpyf(statusBarMsg,sblen,"\033[38;5;%dmUnnamed File, try /saveas",colors[5]);
+                    }
+                    break;
                 case '/':
                     ;
                     size_t oldRow = cy;
@@ -289,12 +319,21 @@ int main(int argc, char ** argv){
                             if(mBuf.filename == NULL){
                                 strcpyf(statusBarMsg,sblen,"\033[38;5;%dmUnnamed file, try /saveas",colors[5]);
                             }else{
-                                saveFile(&mBuf);
+                                int newbytes = calcsize(&mBuf);
+                                int oldbytes = calcsize(lastSave);
+                                lastSave = saveFile(&mBuf);
+                                lastsavesize = abs(newbytes-oldbytes);
+                        get24Htime(lastsavetimestr,64);
+                        strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,abs(newbytes-oldbytes),lastsavetimestr);
                                 hasSaved = 1;
                             }
                         } else if(strcmp(cmdbuf,"/wq")== 0){
                             if(mBuf.filename != NULL){
-                                saveFile(&mBuf);
+                                int newbytes = calcsize(&mBuf);
+                                int oldbytes = calcsize(lastSave);
+                                lastSave = saveFile(&mBuf);
+                        get24Htime(lastsavetimestr,64);
+                        strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,abs(newbytes-oldbytes),lastsavetimestr);
                                 quit = 1;
                                 break;
                             }else{
@@ -314,7 +353,12 @@ int main(int argc, char ** argv){
                         }   
                         else if(strncmp(cmdbuf,"/saveas ",8) == 0){
                             char * newname = cmdbuf+8;
-                            saveFile(&mBuf);
+                            int newbytes = calcsize(&mBuf);
+                            int oldbytes = calcsize(lastSave);
+                        lastsavesize = abs(newbytes-oldbytes);
+                            lastSave = saveFile(&mBuf);
+                        get24Htime(lastsavetimestr,64);
+                        strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,abs(newbytes-oldbytes),lastsavetimestr);
                             hasSaved = 1;
                             char * oldfilename = mBuf.filename;
                             char * new = (char *)malloc(strlen(newname)*sizeof(char));
@@ -360,7 +404,7 @@ int main(int argc, char ** argv){
                             }
 
                         }else{
-                            strcpyf(statusBarMsg,sblen,"\033[38;5;%dmUnknown command \'%s\'",cmdbuf);
+                            strcpyf(statusBarMsg,sblen,"\033[38;5;%dmUnknown command \'%s\'",colors[5],cmdbuf);
                         }
                     }
                     memset(cmdbuf,'\0',sizeof(cmdbuf));
@@ -381,7 +425,8 @@ int main(int argc, char ** argv){
                
                 mode = 'n';
                 strcpy(modestr,"--NORMAL--");
-                update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
+                strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+                update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
                 continue;
 
                 if(mBuf.xpos+cx-mBuf.xoffset == strlen(mBuf.contents[mBuf.ypos+cy-mBuf.yoffset])){
@@ -507,11 +552,10 @@ int main(int argc, char ** argv){
             update_made = 0;
         }
 
-        if(statusBarMsg[0] == '\0') {
-            update_statusbar(modestr,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
-        } else {
-            update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
-        }
+        if(statusBarMsg[0] == '\0') 
+            strcpyf(statusBarMsg,sblen,"%s  %dB written at %s",modestr,lastsavesize,lastsavetimestr);
+        
+        update_statusbar(statusBarMsg,HEIGHT,WINWIDTH,&mBuf,colors,cy,cx);
         strcpy(statusBarMsg,"");
         memset(input_buffer,'\0',sizeof(input_buffer));
         snapCursorLeft(&mBuf,&cy,&cx,WINHEIGHT,WINWIDTH,colors);

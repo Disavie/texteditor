@@ -14,7 +14,7 @@
 #include "themes/retro_orange.h"
 #include "themes/retro_green.h"
 #include "themes/light.h"
-
+#include "themes/dark.h"
 
 
 typedef struct{
@@ -36,6 +36,7 @@ static Theme zthemes[] = {
     {"retro_orange",retro_orange},
     {"retro_green",retro_green},
     {"light",light},
+    {"dark",dark},
 };
 
 static const size_t zthemecount = sizeof(zthemes)/sizeof(zthemes[0]);

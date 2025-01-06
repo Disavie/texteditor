@@ -32,10 +32,15 @@ char *remove_line(Buffer * buf, int buf_row) ;
 
 void loadFile(Buffer * dest,char * filename); 
 void createFile(Buffer * dest,char * filename);
-int saveFile(Buffer * buf);
+Buffer * saveFile(Buffer * buf);
 void drawbuffer(short starty, short startx, int win_height,int win_width, Buffer * buffer,const short colors[]); 
 
 void drawStatusBar(char * text,int width);
 void update_statusbar(char * words,short ypos, short width, Buffer * buf,const short colors[],size_t cy, size_t cx);
+
+
+void freeBuffer(Buffer * buf);
+Buffer * copyBuffer(Buffer * buf);
+
 
 #endif

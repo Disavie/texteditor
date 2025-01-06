@@ -20,6 +20,7 @@ const short default5[] = {
     COLOR_ORANGE_BRIGHT,   // strings
     COLOR_PURPLE_VIOLET,   // preprocessor
     COLOR_BLUE_JEAN,       // numbers
+    COLOR_ORANGE_BRIGHT,   // anglebrackets 
 };
 
 #endif

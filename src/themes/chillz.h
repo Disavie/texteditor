@@ -22,6 +22,7 @@ const short chillz[] = {
     COLOR_ORANGE_CARAMEL,  // strings
     COLOR_PURPLE_ORCHID,   // preprocessor
     161,      // numbers
+    COLOR_ORANGE_CARAMEL,// ANGLEBRACKETS
 
 };
 

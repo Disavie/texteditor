@@ -22,6 +22,7 @@ const short retro_green[] = {
     COLOR_MINT_GREEN,  // strings
     COLOR_TURQUOISE_MIDNIGHT,   // preprocessor
     COLOR_TURQUOISE_MIDNIGHT,      // numbers
+    COLOR_MINT_GREEN,  // anglebrackets 
 };
 
 

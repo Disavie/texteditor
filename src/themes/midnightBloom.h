@@ -20,5 +20,6 @@ const short midnightBloom[] = {
     COLOR_ORANGE_CARAMEL,  // strings
     COLOR_YELLOW_SUNSHINE, // preprocessor
     COLOR_MINT_GREEN2,     // numbers
+    COLOR_ORANGE_CARAMEL,  // anglebrckets 
 };
 #endif

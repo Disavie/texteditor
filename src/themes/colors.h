@@ -68,6 +68,7 @@ typedef enum {
     COLOR_LIGHT_BLUE = 39,
     COLOR_BLUE_NAVY = 17,
     COLOR_BLUE_TURQUOISE = 122,
+    COLOR_SOLID_BLUE = 32,
 
     // Yellows
     COLOR_YELLOW_BRIGHT = 3,
@@ -102,6 +103,7 @@ typedef enum {
     //Magenta
 
     COLOR_MAGENTA = 125,
+    COLOR_MAGENTA_DARK = 89,
     COLOR_183 = 183,
     COLOR_MAGENTA_PALE = 189,
 

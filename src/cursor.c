@@ -150,7 +150,7 @@ int smart_moveright_n(Buffer * buf,size_t cx, size_t length,int width){
     
     int padx = 10;
 
-    if(cx == width-padx && buf->xpos + cx - buf->xpos < length){
+    if(cx >= width-padx && buf->xpos + cx - buf->xpos < length){
         buf->xpos++;
         return 1;
     }
@@ -166,7 +166,7 @@ int smart_moveright_i(Buffer * buf,size_t cx, size_t length,int width){
 
     int padx = 10;
 
-    if(cx == width - 1 - padx && buf->xpos + cx - buf->xpos < length+1 ){
+    if(cx >= width - 1 - padx && buf->xpos + cx - buf->xpos < length+1 ){
         buf->xpos++;
         return 1;
     }

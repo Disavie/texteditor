@@ -21,6 +21,7 @@ const short retro_orange[] = {
     COLOR_PEACH2,  // strings
     COLOR_PEACH,   // preprocessor
     COLOR_ORANGE_CARAMEL,      // numbers
+    COLOR_PEACH2,  // anglebracetk 
 };
 
 

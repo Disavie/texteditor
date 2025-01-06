@@ -14,6 +14,7 @@ void set_input_mode(struct termios *old_termios) {
 
     // Disable buffered input (canonical mode) and echo
     new_termios.c_lflag &= ~(ICANON | ECHO );
+    new_termios.c_iflag &= ~IXON;
     new_termios.c_cc[VMIN] = 1;
     new_termios.c_cc[VTIME] = 0;
 
@@ -29,6 +30,14 @@ double get_time_ms(){
     struct timeval tv;
     gettimeofday(&tv,NULL);
     return (tv.tv_sec * 1000.0)+(tv.tv_usec / 1000.0);
+}
+
+void get24Htime(char * put,size_t size){
+    double time_in_ms = get_time_ms();
+    time_t time_in_sec = (time_t)(time_in_ms / 1000);  // Convert milliseconds to seconds
+    struct tm *local_time = localtime(&time_in_sec);  // Convert seconds to local time
+
+    strftime(put, size, "%H:%M:%S", local_time);
 }
 
 int get_terminal_size(int *rows, int *cols) {
@@ -168,3 +177,11 @@ size_t calcsizeKB(Buffer * buf){
 }
 
 
+size_t calcsize(Buffer * buf){
+
+    size_t bytes = 0;
+    for(int i = 0 ; i < buf->linecount ; i++){
+        bytes+=strlen(buf->contents[i]);
+    }
+    return bytes;
+}
