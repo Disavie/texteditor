@@ -198,3 +198,5 @@ Currently, Zep is built from source. Ensure you have a C compiler and terminal e
 
 ## Contribution
 Contributions are welcome! Feel free to submit issues or pull requests to improve Zep.
+
+thanks chatgpt for formatting this nicely
