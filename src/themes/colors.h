@@ -159,7 +159,7 @@ typedef enum {
     COLOR_RUBY = 160,
     COLOR_AMBER = 214
 
-} TColors;
+}TColors;
 
 
 #endif

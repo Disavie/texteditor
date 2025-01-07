@@ -7,8 +7,8 @@ const short dark[] = {
 
 
     COLOR_WHITE, //regular text
-    COLOR_GRAY_4, //file bg color
-    COLOR_GRAY_3, //unused bg color
+    COLOR_CHARCOAL, //file bg color
+    COLOR_BLACK, //unused bg color
     COLOR_GRAY_15, //comments
     NONE, //border color -- deprecated
     COLOR_RED_RUBY, // error

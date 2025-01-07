@@ -1,10 +1,10 @@
 terminal text editor that uses 0 libraries.. everything is written by me <br />
-
+
 CONTROLS <br />
 type '/' to open the command line <br />
 type 'i' to enter insert mode <br />
 type ESC to exit insert mode <br>
-
+asdasd
 o = move cursor down and start newline <br />
 O = move cursor up and start new line <br />
 hjkl or arrow keys move cursor <br />
@@ -16,12 +16,17 @@ s deletes character and enters insert mode <br />
 f[letter] = find [letter] in line <br />
 F[letter] = find [letter] in line backwards <br />
 c = center current line on screen <br />
+u to undo (goes until session) <br />
+r to redo (goes to newest change) <br />
+
+CTRL q to quick exit (without saving) <br />
+CTRL s to quick save <br />
 
 /theme to change theme <br />
 --themes: light dark default1 default2 default3 default4 deafult5 gptcolors retro_orange retro_green <br />
 /w to save /q to quit /e to edit a file <br />
 
-no copy paste or undo redo yet <br />
+no copy paste yet <br />
 
 planned features: <br />
 
@@ -29,7 +34,6 @@ planned features: <br />
 --add the "anatomy of a motion" so i can do things like 10j 10k dw db ETC <br />
 --this will likely mean a rework of the normal mode quick commands since i will need to add a proper buffer system to create a full command across inputs <br />
 --add CTRL f and CTRL F <br />
---valgrind reduce memory leaks <br />
 --add a keystrokes tracker
 --made statusbar better,, in theory it can spillover to next line with a really really long filename <br />
 
@@ -37,7 +41,22 @@ planned features: <br />
 note for 30 <br />
 start work on visual line mode to copy <br />
 start work on copy paste to zep-only buffer (vim yank) <br />
+undo/redo history <br />
 need to add ability to do dw db and relative line jumps <br />
+
+
+commit #30 <br />
+started work on undo/redo tree <br />
+changed statusbar write display <br />
+mBuf now is * mbuf on heap <br />
+no memory leaks according to valgrind <br />
+more accurate write size notification <br />
+fixed problem with hitting s in normal mode <br />
+starting work on having multiple buffers (and windows) open at once <br />
+undo and redo is fully working afaik and is completely memory safe !!!! <br />
+also added a quick CTRL Q to exit fast <br />
+re-disabling the CTRL C to kill a program <br />
+hitting CTRL S in insert mode does weird stuff.. fixed it i think.. keep an eye out  <br />
 
 commit #29 <br />
 fixed w L scroll bugs <br />

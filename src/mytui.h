@@ -59,8 +59,9 @@ char * highlightLine(char *line,const short colors[]);
 char * highlightsubstr(char *line,size_t start, size_t end, const short colors[]);
 char * substr(char * line, size_t start, size_t end);
 char * substr_2(char * start, size_t end);
-size_t calcsizeKB(Buffer * buf);
+size_t calcsizeKB(Buffer * buf); //this works for KB
 size_t calcsize(Buffer * buf);
+size_t calcbytes(char * filename); //most accurate
 #endif
 
 

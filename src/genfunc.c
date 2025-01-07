@@ -110,6 +110,9 @@ char updateMode(char inputch, char * mode, char ** modestr){
 }
 
 void strcpyf(char *destination, size_t dest_size, const char *format, ...) {
+//    for(size_t i = 0 ; i < dest_size ; i++) {
+//        destination[i] = '\0';
+//    }
     va_list args;
 
     // Start processing variable arguments
@@ -166,12 +169,19 @@ char * substr_2(char * start, size_t len){
 
 }
 
+size_t calcbytes(char * filename){
+    FILE * f = fopen(filename,"r");
+    fseek(f,0L,SEEK_END);
+    size_t sz = ftell(f);
+    return sz;
+}
 
 size_t calcsizeKB(Buffer * buf){
 
     size_t bytes = 0;
     for(int i = 0 ; i < buf->linecount ; i++){
         bytes+=strlen(buf->contents[i]);
+        bytes++;
     }
     return bytes/1024;
 }
@@ -182,6 +192,7 @@ size_t calcsize(Buffer * buf){
     size_t bytes = 0;
     for(int i = 0 ; i < buf->linecount ; i++){
         bytes+=strlen(buf->contents[i]);
+        bytes++; //extra ++ to account for \n in a real file
     }
     return bytes;
 }
