@@ -8,7 +8,7 @@ terminal text editor that uses 0 not std libraries.. everything is written by me
 type '/' to open the command line <br />
 type 'i' to enter insert mode <br />
 type ESC to exit insert mode <br>
-asdasd
+
 o = move cursor down and start newline <br />
 O = move cursor up and start new line <br />
 hjkl or arrow keys move cursor <br />
