@@ -17,6 +17,8 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 - `b`: Jump backward until whitespace.
 - `o`: Move cursor down and start a new line.
 - `O`: Move cursor up and start a new line.
+- 'f': Find forwards in line.
+- 'F': Find backwards in line.
 
 ### Editing Commands
 - `x`: Delete the current character.
