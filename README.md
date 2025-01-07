@@ -1,4 +1,8 @@
-terminal text editor that uses 0 libraries.. everything is written by me <br />
+<h1>Zep - Vimlike text editor<h1>
+
+
+
+terminal text editor that uses 0 not std libraries.. everything is written by me <br />
 
 CONTROLS <br />
 type '/' to open the command line <br />
