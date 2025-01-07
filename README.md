@@ -4,7 +4,7 @@
 
 terminal text editor that uses 0 not std libraries.. everything is written by me <br />
 
-CONTROLS <br />
+aCONTROLS <br />
 type '/' to open the command line <br />
 type 'i' to enter insert mode <br />
 type ESC to exit insert mode <br>
@@ -54,7 +54,7 @@ started work on undo/redo tree <br />
 changed statusbar write display <br />
 mBuf now is * mbuf on heap <br />
 no memory leaks according to valgrind <br />
-more accurate write size notification <br />
+amore accurate write size notification <br />
 fixed problem with hitting s in normal mode <br />
 starting work on having multiple buffers (and windows) open at once <br />
 undo and redo is fully working afaik and is completely memory safe !!!! <br />
