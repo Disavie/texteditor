@@ -1,6 +1,6 @@
 terminal text editor that uses 0 libraries.. everything is written by me <br />
-
-CONTROLS <br />
+
+CONTROLS <br />
 type '/' to open the command line <br />
 type 'i' to enter insert mode <br />
 type ESC to exit insert mode <br>
