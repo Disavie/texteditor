@@ -44,7 +44,7 @@ size_t countLines(FILE * f);
 void drawLogo(int HEIGHT,int WIDTH, const short color[]);
 
 void strcpyf(char *destination, size_t dest_size, const char *format, ...) ;
-
+int getnum(char * line);
 
 
 //VIMLIKE MOTIONS

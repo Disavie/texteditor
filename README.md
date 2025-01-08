@@ -50,7 +50,7 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 
 ## Planned Features
 - Vim-style `<leader>` commands for faster workflows.
-- Motion commands like `10j`, `dw`, `db`, etc.
+- Add relative line numbers, maybe I will do this after I add a 'settings' type file though
 - Visual Line Mode and Zep-only buffer for copy-pasting.
 - Enhanced status bar with spillover support.
 - Keystroke tracker.
@@ -59,10 +59,24 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 - No copy-paste functionality yet.
 - Some command sequences may need rework to support motion commands.
 - Flickering issues during fast typing may occur.
+- Sometimes segfaults when leaving normal mode, not super reproduceable though
 
 ## Development Log
 
+Soon to be added:
+    -Add smart indenting
+    -Fix smart_movedown so that it will actually scroll to bottom of document instead of 10 lines from the bottom
+    -Still has trouble scrolling when writing at the end of the line sometimes and I don't know why
+    -Make undo/redo jump cursor to position of change too
+    -Make a /t and /b command to jump to top and bottom of document
+
 ### Commit History
+
+#### Commit #31
+- d and x dont work with undo redo right now.
+- Added support for some improved motions like []w []b []F[] []f[] []h/j/k/l
+- f was broken, fixed it
+
 #### Commit #30
 - Started work on an undo/redo tree and added support for multiple buffers.
 - Enhanced status bar with more accurate write size notifications.

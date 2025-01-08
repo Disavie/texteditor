@@ -21,6 +21,7 @@ void drawLogo(int HEIGHT, int WIDTH,const short colors[]) {
     const char *art[] = {
         "             Zep v0.0.30",
         "  Open Source Terminal Text Editor",
+        "             solo project",
         "",
         "         @@PMTTTTTTTT]@@@@M",
         "        j@          g@@@P",

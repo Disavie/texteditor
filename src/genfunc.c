@@ -196,3 +196,28 @@ size_t calcsize(Buffer * buf){
     }
     return bytes;
 }
+
+int getnum(char *line) {
+    if (!line) {
+        return 1; // Return -1 if the input line is NULL
+    }
+
+    if (*line == '\0') {
+        return 1; // Return 0 if the line contains only '\0'
+    }
+
+    int num = 0;
+    int found_number = 0;
+
+    while (*line) {
+        if (isdigit(*line)) {
+            found_number = 1;
+            num = num * 10 + (*line - '0');
+        } else if (found_number) {
+            break; // Stop parsing after the first continuous number
+        }
+        line++;
+    }
+
+    return found_number ? num : 1; // Return 1 if no number was found
+}
