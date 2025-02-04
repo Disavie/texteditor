@@ -17,8 +17,8 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 - `b`: Jump backward until whitespace.
 - `o`: Move cursor down and start a new line.
 - `O`: Move cursor up and start a new line.
-- 'f': Find forwards in line.
-- 'F': Find backwards in line.
+- `f`: Find forwards in line.
+- `F`: Find backwards in line.
 
 ### Editing Commands
 - `x`: Delete the current character.
@@ -57,9 +57,7 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 
 ## Known Issues and Notes
 - No copy-paste functionality yet.
-- Some command sequences may need rework to support motion commands.
 - Flickering issues during fast typing may occur.
-- Sometimes segfaults when leaving normal mode, not super reproduceable though
 
 ## Development Log
 
@@ -71,6 +69,14 @@ Soon to be added:
     -Make a /t and /b command to jump to top and bottom of document
 
 ### Commit History
+
+#### Commit #32
+- dd and dw db work now and support undo/redo
+- Still crashes on leaving insert mode sometimes fix this soon
+- Added x to undo/redo
+- Fixed segfault after saving
+- w and b now move to first non alphanumeric character instead of whitespace
+- u/r now moves cursor around but not how you would expect, needs more work
 
 #### Commit #31
 - d and x dont work with undo redo right now.
