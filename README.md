@@ -73,6 +73,12 @@ Soon to be added:
 ### Commit History
 
 
+#### Commit #34
+- laptop and pc versions are now merged on main.. no more savecrashing problems as of now
+- fix repeat undo bug.. history on earliest buffer issue maybe
+- fix undo redo cursor jumping
+
+
 #### Commit #33 - Laptop
 - it seems like the random crashing on leaving insert mode is fixed?
 - crashing after saving is fixed here.. not sure what changed.. 
