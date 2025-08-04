@@ -5,6 +5,7 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 
 ## Controls
 
+
 ### Modes
 - **Command Line Mode**: Type `/` to open the command line.
 - **Insert Mode**: Type `i` to enter Insert Mode.
@@ -55,6 +56,7 @@ Zep is a terminal-based text editor designed with Vim-like controls, but built e
 - Enhanced status bar with spillover support.
 - Keystroke tracker.
 
+
 ## Known Issues and Notes
 - No copy-paste functionality yet.
 - Flickering issues during fast typing may occur.
@@ -69,6 +71,13 @@ Soon to be added:
     -Make a /t and /b command to jump to top and bottom of document
 
 ### Commit History
+
+
+#### Commit #33 - Laptop
+- it seems like the random crashing on leaving insert mode is fixed?
+- crashing after saving is fixed here.. not sure what changed.. 
+- BUG WITH REPEATED UNDOING.. to make bug occur hit df[letter] multiple times then undo mulitple times
+- ^ actually just happens with repeat undo
 
 #### Commit #32
 - dd and dw db work now and support undo/redo
