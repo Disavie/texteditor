@@ -62,6 +62,13 @@ char * substr_2(char * start, size_t end);
 size_t calcsizeKB(Buffer * buf); //this works for KB
 size_t calcsize(Buffer * buf);
 size_t calcbytes(char * filename); //most accurate
+//
+//
+//
+//
+
+//
+void history_helper(int * made_edit, size_t * his_sz, size_t * his_i, Buffer *** history,Buffer ** mbuf,size_t indexofchange);
 #endif
 
 

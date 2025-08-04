@@ -1,5 +1,6 @@
 #include "Buffer.h"
 #include "mytui.h"
+#include "cursor.h"
 
 void loadFile(Buffer *dest, char *filename) {
 
@@ -83,48 +84,6 @@ void replace_tab(char **line) {
       (*line)[i] = ' ';
   }
 }
-void copyBuffer(Buffer *dest, Buffer *buf) {
-
-
-    dest->linecount = buf->linecount;
-    dest->ypos = 0;
-    dest->xpos = 0;
-    dest->xoffset = buf->xoffset;
-    dest->yoffset = buf->yoffset;
-    dest->ycorner = buf->ycorner;
-    dest->xcorner = buf->xcorner;
-
-    if (buf->filename != NULL) {
-        dest->filename = (char *)malloc((strlen(buf->filename) + 1) * sizeof(char));
-        strcpy(dest->filename, buf->filename);
-        dest->filename[strlen(buf->filename)] = '\0';
-    } else {
-        dest->filename = NULL;
-    }
-    char **newcontents = (char **)malloc(buf->linecount * sizeof(char *));
-    dest->contents = newcontents;
-    for (int i = 0; i < buf->linecount; i++) {
-        dest->contents[i] = malloc((strlen(buf->contents[i]) + 1) * sizeof(char));
-        strcpy(dest->contents[i], buf->contents[i]);
-        dest->contents[i][strlen(buf->contents[i])] = '\0';
-  }
-}
-
-void freeBuffer(Buffer *buf) {
-
-  if (buf->contents != NULL) {
-    for (size_t i = 0; i < buf->linecount; i++) {
-      free(buf->contents[i]);
-    }
-    free(buf->contents);
-  }
-  if (buf->filename != NULL) {
-    free(buf->filename);
-  }
-
-  free(buf);
-}
-
 void saveFile(Buffer *file) {
 
   FILE *f;
@@ -365,10 +324,67 @@ void update_statusbar(char *words, short ypos, short width, Buffer *buf,
   showcursor();
 }
 
+void copyBuffer(Buffer **dest, Buffer *buf) {
+
+    size_t hy;
+    size_t hx;
+    get_cursor_pos(&hy,&hx);
+
+    (*dest)->linecount = buf->linecount;
+    (*dest)->ypos = buf->ypos;
+    (*dest)->xpos = buf->xpos;
+    (*dest)->xoffset = buf->xoffset;
+    (*dest)->yoffset = buf->yoffset;
+    (*dest)->ycorner = buf->ycorner;
+    (*dest)->xcorner = buf->xcorner;
+    (*dest)->cy = hy;
+    (*dest)->cx = hx;
+
+    if (buf->filename != NULL) {
+        (*dest)->filename = (char *)malloc((strlen(buf->filename) + 1) * sizeof(char));
+        strcpy((*dest)->filename, buf->filename);
+        (*dest)->filename[strlen(buf->filename)] = '\0';
+    } else {
+        (*dest)->filename = NULL;
+    }
+    char **newcontents = (char **)malloc(buf->linecount * sizeof(char *));
+    (*dest)->contents = newcontents;
+    for (int i = 0; i < buf->linecount; i++) {
+        (*dest)->contents[i] = malloc((strlen(buf->contents[i]) + 1) * sizeof(char));
+        strcpy((*dest)->contents[i], buf->contents[i]);
+        (*dest)->contents[i][strlen(buf->contents[i])] = '\0';
+  }
+}
+
+void freeBuffer(Buffer *buf) {
+
+  if (buf->contents != NULL) {
+    for (size_t i = 0; i < buf->linecount; i++) {
+      free(buf->contents[i]);
+    }
+    free(buf->contents);
+  }
+  if (buf->filename != NULL) {
+    free(buf->filename);
+  }
+
+  free(buf);
+}
+
 Buffer ** initbarr(){
     Buffer ** arr = malloc(1*sizeof(Buffer *));
     arr[0] = malloc(sizeof(Buffer));
     return arr;
+}
+
+Buffer ** initbarr_IC(Buffer * inital,size_t * bcount) {
+
+    Buffer ** arr = malloc(1*sizeof(Buffer *));
+    arr[0] = malloc(sizeof(Buffer));
+    copyBuffer(arr,inital);
+    *bcount = 1;
+    return arr;
+
 }
 
 void clearbarr(Buffer ***arr, size_t *bcount) {
@@ -386,7 +402,7 @@ void clearbarr_fromi(Buffer ***arr, size_t *bcount,size_t index) {
     Buffer ** new = malloc((index+1)*sizeof(Buffer *));
     for(int i = 0 ; i <= index ; i++){
         new[i] = malloc(sizeof(Buffer));
-        copyBuffer(new[i],(*arr)[i]);
+        copyBuffer(new+i,(*arr)[i]);
     }
     clearbarr(arr,bcount);
     *arr = new;
@@ -396,7 +412,7 @@ void clearbarr_fromi(Buffer ***arr, size_t *bcount,size_t index) {
 Buffer *addbuffer(Buffer ***arr, size_t *bcount, Buffer * newstate) {
 
     Buffer * new = malloc(sizeof(Buffer));
-    copyBuffer(new,newstate);
+    copyBuffer(&new,newstate);
     Buffer **newarr = realloc(*arr, (*bcount + 1) * sizeof(Buffer *));
     *arr = newarr;
     (*arr)[*bcount] = new;

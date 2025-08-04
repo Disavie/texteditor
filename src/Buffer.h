@@ -20,6 +20,12 @@ typedef struct{
     //values for when being rendered on screen
     size_t xpos;
     size_t ypos;
+
+    //ONLY USED FOR UNDO/REDO JUMP
+    size_t cy;
+    size_t cx;
+    size_t ypos_of_change;
+
 }Buffer;
 
 char * insert_to_line(Buffer * buf, size_t row, size_t index_in_line,char ch);
@@ -37,11 +43,12 @@ void update_statusbar(char * words,short ypos, short width, Buffer * buf,const s
 
 
 void freeBuffer(Buffer * buf);
-void copyBuffer(Buffer * dest,Buffer * buf);
+void copyBuffer(Buffer ** dest,Buffer * buf);
 
 Buffer * addbuffer(Buffer *** arr,size_t *bcount, Buffer * newstate);
 void clearbarr(Buffer ***arr, size_t *bcount) ;
 void clearbarr_fromi(Buffer ***arr, size_t *bcount,size_t index) ;
 Buffer ** initbarr();
+Buffer ** initbarr_IC(Buffer * inital,size_t * bcount);
 
 #endif

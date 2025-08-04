@@ -85,15 +85,15 @@ int main(int argc, char ** argv){
     //motion type (w f<char> $ ^)
 
     ssize_t bytes_read;
-    Buffer ** history = initbarr();
-    copyBuffer(history[0],mbuf);
-    
     int made_edit = 0;
-    size_t his_sz = 1; 
+    size_t his_sz = 0; 
     size_t his_i = 0;
+    Buffer ** history = initbarr_IC(mbuf,&his_sz);
+    
     int quit = 0;
 
     while((bytes_read = read(STDIN_FILENO,input_buffer,sizeof(input_buffer))) != -1){
+
 
         hidecursor();
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -101,7 +101,7 @@ int main(int argc, char ** argv){
         HEIGHT = w.ws_row;
         WINHEIGHT = HEIGHT - STATUSBARHEIGHT;
         WINWIDTH = WIDTH; 
-    
+
 
         if(bytes_read == 0) continue;
         ch = input_buffer[0];
@@ -115,17 +115,9 @@ int main(int argc, char ** argv){
         if (ch == '\033'){
             if(input_buffer[1] == '\0'){
                 mode = 'n';
-                if(made_edit) {
-                    if(his_i == his_sz -1){
-                        addbuffer(&history,&his_sz,mbuf);
-                        his_i++;
-                    }else{
-                        clearbarr_fromi(&history,&his_sz,his_i);
-                        addbuffer(&history,&his_sz,mbuf);
-                        his_i++;
-                    }
-                    made_edit = 0;
-                }
+                logLine("\n exiting normal mode!");
+                history_helper(&made_edit,&his_sz,&his_i,&history,&mbuf,mbuf->ypos);
+                logLine("\nexited history_helper");
                 
                 strcpy(modestr,"--NORMAL--");
                 strcpyf(statusBarMsg,sblen,"%s",modestr);
@@ -260,7 +252,6 @@ int main(int argc, char ** argv){
             hasSaved = 0;
             made_edit = 1;
         }
-
         get_cursor_pos(&cy,&cx);
         drawbuffer(mbuf->ycorner,mbuf->xcorner,WINHEIGHT,WINWIDTH,mbuf,colors);
         movecurs(cy,cx);

@@ -221,3 +221,22 @@ int getnum(char *line) {
 
     return found_number ? num : 1; // Return 1 if no number was found
 }
+
+
+void history_helper(int * made_edit, size_t * his_sz, size_t * his_i, Buffer *** history,Buffer ** mbuf, size_t changepos){
+    Buffer * b;
+    if(*made_edit) {
+        if(*his_i == (*his_sz) -1){
+            logLine("\ncondition 1");
+            b = addbuffer(history,his_sz,*mbuf);
+            (*his_i)++;
+        }else{
+            logLine("\ncondition 2");
+            clearbarr_fromi(history,his_sz,*his_i);
+            b = addbuffer(history,his_sz,*mbuf);
+            (*his_i)++;
+        }
+
+        *made_edit = 0;
+    }
+}
