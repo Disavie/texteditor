@@ -2,6 +2,7 @@
 
 ## Overview
 Zep is a terminal-based text editor designed with Vim-like controls, but built entirely from scratch without any standard libraries. It provides a modal editing experience, rich with unique features and customization options.
+(Besides the C standard libray)
 
 ## Controls
 
